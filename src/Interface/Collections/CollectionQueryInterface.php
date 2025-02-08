@@ -43,7 +43,7 @@ interface CollectionQueryInterface
     /**
      * Get only the first result or null
      *
-     * @return Model|null
+     * @return T|null
      */
     public function first() : ?Model;
 

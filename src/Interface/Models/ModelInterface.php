@@ -11,6 +11,11 @@ use Lsr\Orm\ModelQuery;
 interface ModelInterface extends JsonSerializable
 {
 
+    public int $id {
+        get;
+        set;
+    }
+
     /**
      * @param  int  $id
      * @param  Row|null  $row
