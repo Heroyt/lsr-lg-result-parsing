@@ -1,0 +1,49 @@
+{
+  "name": "lsr/lg-result-parsing",
+  "description": "Result parsing for laser game - LaserMaxx Evo5, Evo6, Laserforce",
+  "type": "library",
+  "version": "0.1.0",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://packages.laserliga.cz"
+    }
+  ],
+  "license": "GPL-3.0-or-later",
+  "autoload": {
+    "psr-4": {
+      "Lsr\\Lg\\Results\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Tomáš Vojík",
+      "email": "vojik@wboy.cz"
+    }
+  ],
+  "config": {
+    "optimize-autoloader": true,
+    "allow-plugins": {
+      "phpstan/extension-installer": true
+    }
+  },
+  "scripts": {
+    "phpstan": "./vendor/bin/phpstan",
+    "phpcbf": "./vendor/bin/phpcbf"
+  },
+  "require": {
+    "php": "^8.4",
+    "lsr/helpers": "^0.3.0",
+    "lsr/laser-liga-api": "^0.1",
+    "lsr/orm": "^0.3.7",
+    "ext-zlib": "*",
+    "lsr/logging": "^0.3.0"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "phpunit/phpunit": "^11",
+    "phpstan/phpstan": "^2.0",
+    "phpstan/extension-installer": "^1.4",
+    "squizlabs/php_codesniffer": "^3.0"
+  }
+}
