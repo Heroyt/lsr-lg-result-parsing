@@ -20,4 +20,35 @@ interface GameModeInterface
         get;
         set;
     }
+    public bool $rankable {
+        get;
+        set;
+    }
+    public bool $active {
+        get;
+        set;
+    }
+
+
+    public function isTeam() : bool;
+
+    public function isSolo() : bool;
+
+    public function getWin(GameInterface $game) : PlayerInterface | TeamInterface | null;
+
+    public function recalculateScores(GameInterface $game) : void;
+
+    public function reorderGame(GameInterface $game) : void;
+
+    /**
+     * @return class-string<GameModeInterface>
+     */
+    public function getSoloAlternative() : string;
+
+    /**
+     * @return class-string<GameModeInterface>
+     */
+    public function getTeamAlternative() : string;
+
+    public function getName() : string;
 }
