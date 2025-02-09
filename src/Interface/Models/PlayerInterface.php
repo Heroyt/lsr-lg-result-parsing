@@ -79,10 +79,10 @@ interface PlayerInterface extends ModelInterface, WithGameInterface
     public int $miss {
         get;
     }
-    public PlayerInterface $favouriteTarget {
+    public ?PlayerInterface $favouriteTarget {
         get;
     }
-    public PlayerInterface $favouriteTargetOf {
+    public ?PlayerInterface $favouriteTargetOf {
         get;
     }
     public ?float $relativeHits {
