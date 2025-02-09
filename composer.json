@@ -2,7 +2,7 @@
   "name": "lsr/lg-result-parsing",
   "description": "Result parsing for laser game - LaserMaxx Evo5, Evo6, Laserforce",
   "type": "library",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repositories": [
     {
       "type": "composer",
