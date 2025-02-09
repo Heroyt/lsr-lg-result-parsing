@@ -298,9 +298,24 @@ abstract class ResultsParser extends AbstractResultsParser
                     if ($argsCount !== 18) {
                         throw new ResultsParseException('Invalid argument count in SCORING');
                     }
-                    $args[11] = AccuracyBonus::tryFrom((int) ($args[11] ?? 0)) ?? AccuracyBonus::OFF;
-                    $args[14] = EncouragementBonus::tryFrom((int) ($args[14] ?? 0)) ?? EncouragementBonus::OFF;
-                    $game->scoring = new Scoring(...$args);
+                    $game->scoring = new Scoring(
+                        deathOther             : (int) $args[0],
+                        hitOther               : (int) $args[1],
+                        deathOwn               : (int) $args[2],
+                        hitOwn                 : (int) $args[3],
+                        hitPod                 : (int) $args[4],
+                        shot                   : (int) $args[5],
+                        highscore              : (int) $args[10],
+                        accuracyBonus          : AccuracyBonus::tryFrom((int) ($args[11] ?? 0)) ?? AccuracyBonus::OFF,
+                        accuracyThreshold      : (int) $args[12],
+                        accuracyThresholdBonus : (int) $args[13],
+                        encouragementBonus     : EncouragementBonus::tryFrom(
+                        (int) ($args[14] ?? 0)
+                    ) ?? EncouragementBonus::OFF,
+                        encouragementBonusScore: (int) $args[15],
+                        power                  : (int) $args[16],
+                        penalty                : (int) $args[17]
+                    );
                     break;
 
                 // ENVIRONMENT contains sound and effects settings
