@@ -12,6 +12,10 @@ interface LaserMaxxPlayerInterface extends PlayerInterface
         get;
         set;
     }
+    public int $scoreAccuracy {
+        get;
+        set;
+    }
     public int $scoreBonus {
         get;
         set;

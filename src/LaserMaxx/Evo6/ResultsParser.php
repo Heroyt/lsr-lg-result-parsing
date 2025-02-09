@@ -19,7 +19,7 @@ use Lsr\ObjectValidation\Exceptions\ValidationException;
 /**
  * Result parser for the EVO6 system
  *
- * @extends \App\Tools\AbstractResultsParser<Evo6GameInterface>
+ * @extends AbstractResultsParser<Evo6GameInterface>
  */
 abstract class ResultsParser extends AbstractResultsParser
 {
@@ -127,7 +127,7 @@ abstract class ResultsParser extends AbstractResultsParser
                     if ($argsCount !== 5) {
                         throw new ResultsParseException('Invalid argument count in GAME');
                     }
-                    [$gameNumber, , $dateStart, $dateEnd, $playerCount] = $args;
+                    [$gameNumber, , $dateStart, $dateEnd] = $args;
                     $game->fileNumber = (int) $gameNumber;
                     if ($dateStart !== $this::EMPTY_DATE) {
                         $date = DateTime::createFromFormat('YmdHis', $dateStart);
@@ -197,6 +197,8 @@ abstract class ResultsParser extends AbstractResultsParser
                     $type = ((int) $args[2]) === 1 ? GameModeType::TEAM : GameModeType::SOLO;
                     $game->mode = $this->gameModeProvider->find($args[0], $type, self::SYSTEM);
                     $game->gameType = $type;
+                    $game->gameStyleType = GameStyleType::tryFrom((int) $args[5]) ?? ($type === GameModeType::TEAM ?
+                        GameStyleType::TEAM : GameStyleType::SOLO);
                     break;
 
                 // STYLEX contains additional game mode settings
@@ -225,43 +227,54 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [9] Hit LEDs?
                 // [10] Game over LEDs?
                 case 'STYLELEDS':
-                    // STYLEFLAGS
-                    // [0] Force lasers off
-                    // [1] Two trigger shooting
-                    // [2] Pack sounds
-                    // [3] Voice coach
-                    // [4] Vibrations
-                    // [5] Anti-stalking
-                    // [6] Always blast shots
-                    // [7] SWAT laser
-                    // [8] SWAT light
-                    // [9] Flash when hit
-                    // [10] Double laser blast shots
-                    // [11] ???
-                    // [12] ???
-                    // [13] Back sensor?
-                    // [14] Front sensor
-                    // [15] Gun sensor
-                    // [16] Shoulder sensor?
-                    // [17] ???
-                    // [18] ???
-                    // [19] ???
-                    // [20] ???
-                    // [21] Dimmed LEDs in game
-                    // [22] Dimmed LEDs when armed
-                    // [23] ???
-                    // [24] ???
-                    // [25] ???
-                    // [26] ???
-                    // [27] ???
-                    // [28] ???
-                    // [29] ???
+                    break;
+                // STYLEFLAGS
+                // [0] Force lasers off
+                // [1] Two trigger shooting
+                // [2] Pack sounds
+                // [3] Voice coach
+                // [4] Vibrations
+                // [5] Anti-stalking
+                // [6] Always blast shots
+                // [7] Allow hits by teammates
+                // [8] Do NOT show originator of hits
+                // [9] Flash when hit
+                // [10] Double laser blast shots
+                // [11] Show remaining play time
+                // [12] SWAT laser?
+                // [13] SWAT light
+                // [14] Front sensor
+                // [15] Gun sensor
+                // [16] Back sensor
+                // [17] Shoulder sensor
+                // [18] ???
+                // [19] ???
+                // [20] Display on during game
+                // [21] Dimmed LEDs in game
+                // [22] ???
+                // [23] Dimmed LEDs when armed
+                // [24] ???
+                // [25] Show special packs when armed
+                // [26] Ammo clips (0 = off, 41 = reload after 5 seconds, 42 = reload after 5 trigger pulls, 3 = reload after pressing chest button)
+                // [27] Ammo clips / shots (binary concat: first byte = clips, second byte = shots in clip)
+                // [28] Trigger speed (0 = fast, 1 = slow, 2 = very slow)
+                // [29] Sound of special shots (0 = normal, 105 = shotgun, 107 = rifle, 111 = pistol)
                 case 'STYLEFLAGS':
-                    // STYLESOUNDS
-                    // [0] Sample table: default (255), LaserMaxx (0), Unused (1), LaserTrooper (2), unused (3), Try this one! (4)
+                    $game->antiStalking = ((int) ($args[5] ?? 0)) !== 0;
+                    $game->blastShots = ((int) ($args[6] ?? 0)) !== 0;
+                    $game->allowFriendlyFire = ((int) ($args[7] ?? 0)) !== 0;
+                    $reloading = ((int) ($args[26] ?? 0)) !== 0;
+                    if ($reloading) {
+                        $clips = (int) ($args[27] ?? 0);
+                        $game->ammo = $clips & 0xFF;      // First byte (LSB)
+                        $game->reloadClips = $clips >> 8; // Second byte (MSB)
+                    }
+                    $game->triggerSpeed = TriggerSpeed::tryFrom((int) ($args[28] ?? 0)) ?? TriggerSpeed::FAST;
+                    break;
+                // STYLESOUNDS
+                // [0] Sample table: default (255), LaserMaxx (0), Unused (1), LaserTrooper (2), unused (3), Try this one! (4)
                 case 'STYLESOUNDS':
                     break;
-
                 // SCORING contains score settings
                 // [0] Death enemy
                 // [1] Hit enemy
@@ -269,23 +282,24 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [3] Hit teammate
                 // [4] Death from pod
                 // [5] Score per shot
-                // [6] ?Score per machine gun?
-                // [7] ?Score per invisibility?
-                // [8] ?Score per agent?
-                // [9] ?Score per shield?
-                // [10] ?Highscore?
-                // [11] ???
-                // [12] ???
-                // [13] ???
-                // [14] ???
-                // [15] ???
-                // [16] ???
-                // [17] ???
+                // [6] ??? (Machine gun)
+                // [7] ??? (Invisibility)
+                // [8] ??? (Agent)
+                // [9] ??? (Shield)
+                // [10] Highscore
+                // [11] Accuracy bonus (0 = off, 1 = Accuracy factor, 2 = Accuracy threshold)
+                // [12] Accuracy threshold
+                // [13] Accuracy threshold bonus
+                // [14] Encouragement bonus (0 = off, 1 = Float to 100, 2 = all players get bonus)
+                // [15] Encouragement bonus for all
+                // [16] Points for power
+                // [17] Points for penalty
                 case 'SCORING':
                     if ($argsCount !== 18) {
                         throw new ResultsParseException('Invalid argument count in SCORING');
                     }
-                    /** @var int[] $args */
+                    $args[11] = AccuracyBonus::tryFrom((int) ($args[11] ?? 0)) ?? AccuracyBonus::OFF;
+                    $args[14] = EncouragementBonus::tryFrom((int) ($args[14] ?? 0)) ?? EncouragementBonus::OFF;
                     $game->scoring = new Scoring(...$args);
                     break;
 
@@ -301,45 +315,118 @@ abstract class ResultsParser extends AbstractResultsParser
                     // REALITY
                     // [0] Reality preset
                 case 'REALITY':
-                    // VIPSTYLE contains special mode settings
-                    // [0] ON / OFF
-                    // [1] 16 arguments
+                break;
+                // VIPSTYLE contains special mode settings
+                // [0] ???
+                // [1] VIP lives
+                // [2] VIP ammo
+                // [3] Bazooka on/off
+                // [4] VIP LEDs
+                // [5] When a VIP is killed, kill the whole team
+                // [6] Points for VIP hit
+                // [7] End game when (0 = All VIPs killed, 1 = One VIP remaining)
+                // [8] Double hits on/off
+                // [9] Tenfold hits on/off
+                // [10] Ignore hits from teammates
+                // [11] ???
+                // [12] Change VIP respawn
+                // [13] VIP respawn
+                // [14] Always blast shots
+                // [15] Silent messages
+                // [16] ???
+                // [17] ???
                 case 'VIPSTYLE':
-                    // VAMPIRESTYLE contains special mode settings
-                    // [0] ON / OFF
-                    // [1] 6 unknown arguments (Lives, hits to infect, vampire team..?)
+                    if ($argsCount < 15) {
+                        throw new ResultsParseException('Invalid argument count in VIPSTYLE');
+                    }
+                    $hitType = match (true) {
+                        ((int) $args[3]) !== 0 => HitType::BAZOOKA,
+                        ((int) $args[8]) !== 0 => HitType::DOUBLE,
+                        ((int) $args[9]) !== 0 => HitType::TENFOLD,
+                        default                => HitType::NORMAL
+                    };
+                    $game->vipSettings = new VipSettings(
+                        lives             : (int) $args[1],
+                        ammo              : (int) $args[2],
+                        respawn           : (((int) $args[12]) !== 0) ? (int) $args[13] : $game->respawn,
+                        killTeam          : ((int) $args[5]) !== 0,
+                        vipHitScore       : (int) $args[6],
+                        hitType           : $hitType,
+                        blastShots        : ((int) $args[14]) !== 0,
+                        ignoreTeammateHits: ((int) $args[10]) !== 0
+                    );
+                    break;
+                // VAMPIRESTYLE contains special mode settings (Zombies)
+                // [0] On/Off - compatibility???
+                // [1] Zombies are special players
+                // [2] Zombie team
+                // [3] Zombie lives
+                // [4] Zombie ammo
+                // [5] Infect after (value+1: 0 = 1 hit, 1 = 2 hits,...)
+                // [6] Rainbow LED
                 case 'VAMPIRESTYLE':
-                    // SWITCHSTYLE contains special mode settings
-                    // [0] ON / OFF
-                    // [1] Number of hits before switch
+                    $game->zombieSettings = new ZombieSettings(
+                        lives           : (int) $args[3],
+                        ammo            : (int) $args[4],
+                        infectHits      : ((int) $args[5]) + 1,
+                        zombieSpecial   : ((int) $args[1]) !== 0,
+                        zombieTeamNumber: (int) $args[2]
+                    );
+                    break;
+                // SWITCHSTYLE contains special mode settings - Barvičky
+                // [0] ON / OFF
+                // [1] Number of hits before switch
                 case 'SWITCHSTYLE':
                     // ASSISTEDSTYLE contains special mode settings
                     // [0] ON / OFF
-                    // [1] 9 unknown arguments (respawn, allow one trigger shooting, ignore hits by teammates, machine gun,..)
+                    // [1] Blast shots
+                    // [2] Double hits on/off
+                    // [3] Ignore hits from teammates
+                    // [4] Allow one trigger shooting
+                    // [5] Change respawn
+                    // [6] Respawn time
+                    // [7] Ignore team hits scoring
+                    // [8] Tenfold hits on/off
+                    // [9] Bazooka on/off
                 case 'ASSISTEDSTYLE':
                     // HITSTREAKSTYLE contains special mode settings
                     // [0] ON / OFF
-                    // [1] 2 unknown arguments (number of hits, allowed bonuses)
+                    // [1] After how many hits
+                    // [2] What powers are active: bin map (1 = 1st power, 2 = stealth power, 4 = blast power, 8 = 4th power)
                 case 'HITSTREAKSTYLE':
                     // SHOWDOWNSTYLE contains special mode settings
                     // [0] ON / OFF
-                    // [1] 4 unknown arguments (time before game, bazooka,...)
+                    // [1] Pack LEDs (0 = normal, 1 = dark, 2 = blink, 3 = power)
+                    // [2] Blast shots
+                    // [3] Duration (last minutes)
+                    // [4] Shot type (0 = normal, 1 = double hits, 2 = bazooka)
                 case 'SHOWDOWNSTYLE':
-                    // ACTIVITYSTYLE contains special mode settings
-                    // [0] ON / OFF
-                    // [1] 2 unknown arguments
+                    break;
+                // ACTIVITYSTYLE contains special mode settings
+                // [0] ON / OFF
+                // [1] Bonus points for activity
+                // [2] Active LEDs (0 = normal, 1 = off when stationary, 2 = off when active)
                 case 'ACTIVITYSTYLE':
-                    // KNOCKOUTSTYLE contains special mode settings
-                    // [0] ON / OFF
-                    // [1] ???
+                    $game->scoring->activity = (int) ($args[1] ?? 0);
+                    break;
+                // KNOCKOUTSTYLE contains special mode settings
+                // [0] ON / OFF
+                // [1] Points for each higher knockout rank
                 case 'KNOCKOUTSTYLE':
-                    // HITGAINSTYLE contains special mode settings
-                    // [0] ON / OFF
-                    // [1] ???
-                    // [2] ???
+                    $game->scoring->knockout = (int) ($args[1] ?? 0);
+                    break;
+                // HITGAINSTYLE contains special mode settings
+                // [0] Add ammo for each hit
+                // [1] Add lives for each hit
+                // [2] ???
                 case 'HITGAINSTYLE':
-                    // CROSSFIRESTYLE contains special mode settings
-                    // [0] ON / OFF
+                    $game->hitGainSettings = new HitGainSettings(
+                        ammo : (int) ($args[0] ?? 0),
+                        lives: (int) ($args[1] ?? 0)
+                    );
+                    break;
+                // CROSSFIRESTYLE contains special mode settings
+                // [0] ON / OFF
                 case 'CROSSFIRESTYLE':
                     // PARALLELSTYLE contains special mode settings
                     // [0] ON / OFF
@@ -350,17 +437,22 @@ abstract class ResultsParser extends AbstractResultsParser
                     // ROCKPAPERSCISSORSSTYLE contains special mode settings
                     // [0] ON / OFF
                 case 'ROCKPAPERSCISSORSSTYLE':
-                    // RESPAWNSTYLE contains special mode settings
-                    // [0] ON / OFF
-                    // [1] ??? (seconds to respawn)
-                    // [2] ??? (invulnerability second)
+                break;
+                // RESPAWNSTYLE contains special mode settings
+                // [0] ON / OFF (0 = off, 1 = on, 2 = manual respawn)
+                // [1] Respawn lives
+                // [2] Respawn after (seconds: 30/60)
                 case 'RESPAWNSTYLE':
-                    // MINESTYLE contains pods settings
-                    // [0] Pod number
-                    // [1] 1 unknown argument
-                    // [2] Settings ID
-                    // [3] Team number (6 = all)
-                    // [4] Pod name
+                    $game->respawnSettings = new RespawnSettings(
+                        respawnLives: (int) ($args[1] ?? 0)
+                    );
+                    break;
+                // MINESTYLE contains pods settings
+                // [0] Pod number
+                // [1] ???
+                // [2] Settings ID
+                // [3] Team number (6 = all)
+                // [4] Pod name
                 case 'MINESTYLE':
                     break;
                 // GROUP contains additional game notes
@@ -385,10 +477,10 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [1] Player name
                 // [2] Team number
                 // [3] ???
-                // [4] ?VIP?
-                // [5] ???
+                // [4] Special (VIP)
+                // [5] One trigger shooting
                 // [6] ???
-                // [7] ???
+                // [7] Birthday
                 case 'PACK':
                     if ($argsCount !== 8) {
                         throw new ResultsParseException('Invalid argument count in PACK');
@@ -401,7 +493,8 @@ abstract class ResultsParser extends AbstractResultsParser
                     $keysVests[$player->vest] = $currKey++;
                     $player->name = substr($args[1], 0, 15);
                     $player->teamNum = (int) $args[2];
-                    $player->vip = $args[4] === '1';
+                    $player->vip = ((int) $args[4]) !== 0;
+                    $player->birthday = ((int) $args[7]) !== 0;
                     break;
 
                 // TEAM contains team info
@@ -442,7 +535,7 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [4] Deaths
                 // [5] Position
                 // [6] Lasermaxx results link
-                // [7] ???
+                // [7] Activity
                 // [8] Calories
                 case 'PACKX':
                     if ($argsCount !== 9) {
@@ -464,39 +557,40 @@ abstract class ResultsParser extends AbstractResultsParser
                     $player->deaths = (int) $args[4];
                     $player->position = (int) $args[5];
                     $player->myLasermaxx = $args[6];
+                    $player->activity = (int) $args[7];
                     $player->calories = (int) $args[8];
                     break;
 
                 // PACKY contains player's additional results
-                // - [0] Vest number
-                // - [1] ?Score for shots
-                // - [2] ?Score for bonuses
-                // - [3] Score for powers
-                // - [4] Score for pod deaths
-                // - [5] Ammo remaining
-                // - [6] Accuracy
-                // - [7] Pod deaths
-                // - [8] ???
-                // - [9] ???
-                // - [10] ???
-                // - [11] ???
-                // - [12] Enemy hits
-                // - [13] Teammate hits
-                // - [14] Enemy deaths
-                // - [15] Teammate deaths
-                // - [16] Lives
-                // - [17] ???
-                // - [18] Score for hits
-                // - [19] ???
-                // - [20] ???
-                // - [21] ???
-                // - [22] ???
-                // - [23] ??? (930)
-                // - [24] ???
-                // - [25] ???
-                // - [26] bonus count
-                // - [27] ???
-                // - [29] ???
+                // [0] Vest number
+                // [1] Score for shots
+                // [2] Score for accuracy
+                // [3] Score for powers
+                // [4] Score for pod deaths
+                // [5] Ammo remaining
+                // [6] Accuracy
+                // [7] Pod deaths
+                // [8] ???
+                // [9] ???
+                // [10] ???
+                // [11] ???
+                // [12] Enemy hits
+                // [13] Teammate hits
+                // [14] Enemy deaths
+                // [15] Teammate deaths
+                // [16] Lives
+                // [17] Time left (in seconds)
+                // [18] Score for hits and deaths
+                // [19] Score for VIP hits
+                // [20] VIP Hits
+                // [21] Score for activity
+                // [22] Score for encouragement
+                // [23] Time spend in game (in seconds)
+                // [24] Score for knockout
+                // [25] LMX Reality bonus
+                // [26] bonus count
+                // [27] penalty count
+                // [28] penalty score
                 case 'PACKY':
                     if ($argsCount !== 29) {
                         throw new ResultsParseException('Invalid argument count in PACKY');
@@ -512,7 +606,7 @@ abstract class ResultsParser extends AbstractResultsParser
                         );
                     }
                     $player->shotPoints = (int) ($args[1] ?? 0);
-                    $player->scoreBonus = (int) ($args[2] ?? 0);
+                    $player->scoreAccuracy = (int) ($args[2] ?? 0);
                     $player->scorePowers = (int) ($args[3] ?? 0);
                     $player->scoreMines = (int) ($args[4] ?? 0);
 
@@ -526,6 +620,13 @@ abstract class ResultsParser extends AbstractResultsParser
                     $player->deathsOwn = (int) ($args[15] ?? 0);
 
                     $player->bonuses = (int) ($args[26] ?? 0);
+                    $player->scoreVip = (int) ($args[19] ?? 0);
+                    $player->scoreActivity = (int) ($args[21] ?? 0);
+                    $player->scoreEncouragement = (int) ($args[22] ?? 0);
+                    $player->scoreKnockout = (int) ($args[24] ?? 0);
+                    $player->scoreReality = (int) ($args[25] ?? 0);
+                    $player->scorePenalty = (int) ($args[28] ?? 0);
+                    $player->penaltyCount = (int) ($args[27] ?? 0);
                     break;
 
                 // PACKZ contains some player's additional results - probably player's deaths (duplicate from PACKY)
@@ -539,7 +640,7 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [0] Team number
                 // [1] Score
                 // [2] Position
-                // [3] ???
+                // [3] Bonus score
                 case 'TEAMX':
                     if ($argsCount !== 4) {
                         throw new ResultsParseException('Invalid argument count in TEAMX');

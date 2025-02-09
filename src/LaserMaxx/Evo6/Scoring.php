@@ -27,6 +27,15 @@ class Scoring implements InsertExtendInterface
         public int $agent = 0,
         public int $shield = 0,
         public int $highscore = 0,
+        public AccuracyBonus      $accuracyBonus = AccuracyBonus::OFF,
+        public int                $accuracyThreshold = 0,
+        public int                $accuracyThresholdBonus = 0,
+        public EncouragementBonus $encouragementBonus = EncouragementBonus::OFF,
+        public int                $encouragementBonusScore = 0,
+        public int                $power = 0,
+        public int                $penalty = 0,
+        public int                $activity = 0,
+        public int                $knockout = 0,
     ) {}
 
     public static function parseRow(Row $row) : static {
@@ -42,6 +51,15 @@ class Scoring implements InsertExtendInterface
             $row->scoring_power_agent ?? 0,
             $row->scoring_power_shield ?? 0,
             $row->highscore ?? 0,
+            AccuracyBonus::tryFrom($row->scoring_accuracy_bonus ?? 0) ?? AccuracyBonus::OFF,
+            $row->scoring_accuracy_threshold ?? 0,
+            $row->scoring_accuracy_threshold_bonus ?? 0,
+            EncouragementBonus::tryFrom($row->scoring_encouragement_bonus ?? 0) ?? EncouragementBonus::OFF,
+            $row->scoring_encouragement_bonus_score ?? 0,
+            $row->scoring_power ?? 0,
+            $row->scoring_penalty ?? 0,
+            $row->scoring_activity ?? 0,
+            $row->scoring_knockout ?? 0,
         );
     }
 
@@ -62,5 +80,14 @@ class Scoring implements InsertExtendInterface
         $data['scoring_power_agent'] = $this->agent;
         $data['scoring_power_shield'] = $this->shield;
         $data['scoring_highscore'] = $this->highscore;
+        $data['scoring_accuracy_bonus'] = $this->accuracyBonus->value;
+        $data['scoring_accuracy_threshold'] = $this->accuracyThreshold;
+        $data['scoring_accuracy_threshold_bonus'] = $this->accuracyThresholdBonus;
+        $data['scoring_encouragement_bonus'] = $this->encouragementBonus->value;
+        $data['scoring_encouragement_bonus_score'] = $this->encouragementBonusScore;
+        $data['scoring_power'] = $this->power;
+        $data['scoring_penalty'] = $this->penalty;
+        $data['scoring_activity'] = $this->activity;
+        $data['scoring_knockout'] = $this->knockout;
     }
 }

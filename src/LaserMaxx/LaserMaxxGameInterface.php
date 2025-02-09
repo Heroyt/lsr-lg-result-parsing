@@ -24,5 +24,19 @@ interface LaserMaxxGameInterface extends GameInterface
         get;
         set;
     }
+    public int $reloadClips {
+        get;
+        set;
+    }
+
+    public bool $allowFriendlyFire {
+        get;
+        set;
+    }
+
+    public bool $antiStalking {
+        get;
+        set;
+    }
 
 }

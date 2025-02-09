@@ -12,9 +12,57 @@ interface Evo6PlayerInterface extends LaserMaxxPlayerInterface
         get;
         set;
     }
+    public int $activity {
+        get;
+        set;
+    }
     public int $calories {
         get;
         set;
+    }
+
+    public int $scoreVip {
+        get;
+        set;
+    }
+
+    public int $scoreActivity {
+        get;
+        set;
+    }
+
+    public int $scoreEncouragement {
+        get;
+        set;
+    }
+
+    public int $scoreKnockout {
+        get;
+        set;
+    }
+
+    public int $scorePenalty {
+        get;
+        set;
+    }
+
+    public int $scoreReality {
+        get;
+        set;
+    }
+
+    public int $penaltyCount {
+        get;
+        set;
+    }
+
+    public bool $birthday {
+        get;
+        set;
+    }
+
+    public int $respawns {
+        get;
     }
 
 }
