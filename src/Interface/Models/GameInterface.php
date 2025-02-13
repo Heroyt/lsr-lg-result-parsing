@@ -15,24 +15,31 @@ interface GameInterface extends WithMetaInterface, WithPlayersInterface, WithTea
 {
     public ?string $resultsFile {
         get;
+        set;
     }
     public string $modeName {
         get;
+        set;
     }
     public ?DateTimeInterface $fileTime {
         get;
+        set;
     }
     public ?DateTimeInterface $start {
         get;
+        set;
     }
     public ?DateTimeInterface $importTime {
         get;
+        set;
     }
     public ?DateTimeInterface $end {
         get;
+        set;
     }
     public ?Timing $timing {
         get;
+        set;
     }
     public string $code {
         get;

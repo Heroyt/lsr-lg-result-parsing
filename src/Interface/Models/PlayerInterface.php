@@ -130,5 +130,5 @@ interface PlayerInterface extends ModelInterface, WithGameInterface
     public function getExpectedAverageTeammateHitCount() : float;
 
     public function getSkillParts() : array;
-
+    
 }
