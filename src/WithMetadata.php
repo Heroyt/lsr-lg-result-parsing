@@ -117,7 +117,7 @@ trait WithMetadata
         }
 
         try {
-            $game->music = MusicMode::get((int) $meta['music']);
+            $game->music = ($this::MUSIC_CLASS)::get((int) $meta['music']);
         } catch (ModelNotFoundException | ValidationException) {
             // Ignore
             $game->music = null;
@@ -143,7 +143,7 @@ trait WithMetadata
         if ($meta['group'] !== 'new') {
             try {
                 // Find existing group
-                $group = GameGroup::get((int) $meta['group']);
+                $group = ($this::GAME_GROUP_CLASS)::get((int) $meta['group']);
                 // If found, clear its players cache to account for the newly-added (imported) game
                 $group->clearCache();
             } catch (ModelNotFoundException | ValidationException) {
@@ -153,9 +153,9 @@ trait WithMetadata
 
         // Default to creating a new game group if the group was not found
         if (!isset($group)) {
-            $group = new GameGroup();
+            $group = new ($this::GAME_GROUP_CLASS)();
             $group->name = sprintf(
-                lang('Skupina %s'),
+                'Skupina %s',
                 isset($game->start) ? $game->start->format('d.m.Y H:i') : ''
             );
         }
@@ -188,7 +188,7 @@ trait WithMetadata
             if (!empty($meta['p'.$player->vest.'u'])) {
                 $code = $meta['p'.$player->vest.'u'];
                 assert(is_string($code));
-                $user = User::getByCode($code);
+                $user = ($this::USER_CLASS)::getByCode($code);
 
                 // Check the public API for user by code
                 if (!isset($user)) {

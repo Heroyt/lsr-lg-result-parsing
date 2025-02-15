@@ -7,9 +7,12 @@
 namespace Lsr\Lg\Results;
 
 use Lsr\Exceptions\FileException;
+use Lsr\LaserLiga\PlayerInterface;
 use Lsr\LaserLiga\PlayerProviderInterface;
 use Lsr\Lg\Results\Interface\GameModeProviderInterface;
+use Lsr\Lg\Results\Interface\Models\GameGroupInterface;
 use Lsr\Lg\Results\Interface\Models\GameInterface;
+use Lsr\Lg\Results\Interface\Models\MusicModeInterface;
 use Lsr\Lg\Results\Interface\ResultsParserInterface;
 use Lsr\Logging\Logger;
 
@@ -21,6 +24,13 @@ use Lsr\Logging\Logger;
  */
 abstract class AbstractResultsParser implements ResultsParserInterface
 {
+    /** @var class-string<MusicModeInterface>  */
+    public const string MUSIC_CLASS = MusicModeInterface::class;
+    /** @var class-string<GameGroupInterface>  */
+    public const string GAME_GROUP_CLASS = GameGroupInterface::class;
+    /** @var class-string<PlayerInterface>  */
+    public const string USER_CLASS = PlayerInterface::class;
+
     /** @var array<string,string[][]> */
     protected array $matches = [];
     protected string $fileName = '';
