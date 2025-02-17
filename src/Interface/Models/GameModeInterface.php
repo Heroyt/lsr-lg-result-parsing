@@ -6,7 +6,7 @@ namespace Lsr\Lg\Results\Interface\Models;
 
 use Lsr\Lg\Results\Enums\GameModeType;
 
-interface GameModeInterface
+interface GameModeInterface extends ModelInterface
 {
     public string $name {
         get;
