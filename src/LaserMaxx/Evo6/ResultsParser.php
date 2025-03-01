@@ -625,7 +625,7 @@ abstract class ResultsParser extends AbstractResultsParser
                     $player->scorePowers = (int) ($args[3] ?? 0);
                     $player->scoreMines = (int) ($args[4] ?? 0);
 
-                    $player->ammoRest = (int) ($args[5] ?? 0);
+                    $player->ammoRest = max(0, (int) ($args[5] ?? 0));
                     $player->accuracy = (int) ($args[6] ?? 0);
                     $player->minesHits = (int) ($args[7] ?? 0);
 
