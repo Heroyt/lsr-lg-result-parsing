@@ -332,7 +332,7 @@ abstract class ResultsParser extends AbstractResultsParser
                 case 'REALITY':
                 break;
                 // VIPSTYLE contains special mode settings
-                // [0] ???
+                // [0] On/Off - compatibility???
                 // [1] VIP lives
                 // [2] VIP ammo
                 // [3] Bazooka on/off
@@ -433,7 +433,7 @@ abstract class ResultsParser extends AbstractResultsParser
                 // HITGAINSTYLE contains special mode settings
                 // [0] Add ammo for each hit
                 // [1] Add lives for each hit
-                // [2] ???
+                // [2] Add minutes for each hit (compatibility field)
                 case 'HITGAINSTYLE':
                     $game->hitGainSettings = new HitGainSettings(
                         ammo : (int) ($args[0] ?? 0),
@@ -473,7 +473,7 @@ abstract class ResultsParser extends AbstractResultsParser
                 // GROUP contains additional game notes
                 // [0] Game title
                 // [1] Game note (meta data)
-                // [2] ???
+                // [2] Solo team color
                 case 'GROUP':
                     if ($argsCount !== 3) {
                         throw new ResultsParseException(
