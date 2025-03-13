@@ -23,10 +23,12 @@ interface WithTeamsInterface
     /** @var TeamCollection<T> */
     public TeamCollection $teams {
         get;
+        set;
     }
     /** @var TeamCollection<T> */
     public TeamCollection $teamsSorted {
         get;
+        set;
     }
 
     /**

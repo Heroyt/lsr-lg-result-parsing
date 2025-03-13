@@ -24,9 +24,11 @@ interface WithPlayersInterface
     }
     public PlayerCollection $players {
         get;
+        set;
     }
     public PlayerCollection $playersSorted {
         get;
+        set;
     }
 
     /**
