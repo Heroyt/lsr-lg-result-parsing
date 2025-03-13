@@ -81,15 +81,19 @@ interface PlayerInterface extends ModelInterface, WithGameInterface
     }
     public ?PlayerInterface $favouriteTarget {
         get;
+        set;
     }
     public ?PlayerInterface $favouriteTargetOf {
         get;
+        set;
     }
     public ?float $relativeHits {
         get;
+        set;
     }
     public ?float $relativeDeaths {
         get;
+        set;
     }
 
     public function saveHits() : bool;
