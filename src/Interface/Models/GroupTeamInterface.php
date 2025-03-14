@@ -9,41 +9,95 @@ interface GroupTeamInterface
 		get;
 	}
 
-	public function getSkill(): float;
+    public float $skill {
+        get;
+        set;
+    }
 
-	public function getPoints(): int;
+    public int $points {
+        get;
+        set;
+    }
 
-	public function getHitsAvg(): float;
+    public float $hitsAvg {
+        get;
+        set;
+    }
 
-	public function getHitsSum(): int;
+    public int $hitsSum {
+        get;
+        set;
+    }
 
-	public function getDeathsAvg(): float;
+    public float $deathsAvg {
+        get;
+        set;
+    }
 
-	public function getDeathsSum(): int;
+    public int $deathsSum {
+        get;
+        set;
+    }
 
-	public function getScoreAvg(): float;
+    public float $scoreAvg {
+        get;
+        set;
+    }
 
-	public function getScoreSum(): int;
+    public int $scoreSum {
+        get;
+        set;
+    }
 
-	public function getHitsOwnAvg(): float;
+    public float $hitsOwnAvg {
+        get;
+        set;
+    }
 
-	public function getHitsOwnSum(): int;
+    public int $hitsOwnSum {
+        get;
+        set;
+    }
 
-	public function getDeathsOwnAvg(): float;
+    public float $deathsOwnAvg {
+        get;
+        set;
+    }
 
-	public function getDeathsOwnSum(): int;
+    public int $deathsOwnSum {
+        get;
+        set;
+    }
 
-	public function getShotsAvg(): float;
+    public float $shotsAvg {
+        get;
+        set;
+    }
 
-	public function getShotsSum(): int;
+    public int $shotsSum {
+        get;
+        set;
+    }
 
-	public function getMissAvg(): float;
+    public float $missAvg {
+        get;
+        set;
+    }
 
-	public function getMissSum(): int;
+    public int $missSum {
+        get;
+        set;
+    }
 
-	public function getAccuracyAvg(): float;
+    public float $accuracyAvg {
+        get;
+        set;
+    }
 
-	public function getKd(): float;
+    public float $kd {
+        get;
+        set;
+    }
 
 	public function addColor(int|string $color) : void;
 
