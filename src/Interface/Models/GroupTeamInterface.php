@@ -16,7 +16,6 @@ interface GroupTeamInterface
 
     public int $points {
         get;
-        set;
     }
 
     public float $hitsAvg {
