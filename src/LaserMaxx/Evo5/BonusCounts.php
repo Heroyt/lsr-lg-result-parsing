@@ -11,6 +11,13 @@ use Lsr\Orm\Interfaces\InsertExtendInterface;
  */
 class BonusCounts implements InsertExtendInterface
 {
+    public const array NAMES = [
+        'agent'        => 'Agent',
+        'invisibility' => 'Neviditelnost',
+        'machineGun'   => 'Samopal',
+        'shield'       => 'Štít',
+    ];
+
     public function __construct(
         public int $agent = 0,
         public int $invisibility = 0,
