@@ -73,14 +73,14 @@ trait WithMetadata
             }
             ksort($players);
             // Calculate and compare hash
-            $hash = md5($game->modeName.';'.implode(';', $players));
+            $hash = md5(strtolower($game->modeName).';'.implode(';', $players));
             if ($hash === $meta['hash']) {
                 $game->setMeta($meta);
                 return true;
             }
             if (!empty($meta['mode'])) {
                 // Game modes must match
-                if ($meta['mode'] !== $game->modeName) {
+                if (strtolower($meta['mode']) !== strtolower($game->modeName)) {
                     return false;
                 }
 

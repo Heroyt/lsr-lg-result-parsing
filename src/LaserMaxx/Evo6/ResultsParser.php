@@ -30,7 +30,7 @@ abstract class ResultsParser extends AbstractResultsParser
     /** @var string Default LMX date string passed when no distinct date should be used (= null) */
     public const string EMPTY_DATE = '20000101000000';
 
-    public const string SYSTEM = 'Evo6';
+    public const string SYSTEM = 'evo6';
 
     /**
      * @inheritDoc
