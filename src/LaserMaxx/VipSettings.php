@@ -30,7 +30,7 @@ class VipSettings implements InsertExtendInterface
      */
     public static function parseRow(Row $row) : ?static {
         return new static(
-            on                : $row->vip_on,
+            on                : (bool) $row->vip_on,
             lives             : $row->vip_lives,
             ammo              : $row->vip_ammo,
             respawn           : $row->vip_respawn,

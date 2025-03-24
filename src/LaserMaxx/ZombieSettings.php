@@ -26,7 +26,7 @@ class ZombieSettings implements InsertExtendInterface
      */
     public static function parseRow(Row $row) : ?static {
         return new static(
-            on              : $row->zombie_on,
+            on              : (bool) $row->zombie_on,
             lives           : $row->zombie_lives,
             ammo            : $row->zombie_ammo,
             infectHits      : $row->zombie_infect_hits,
