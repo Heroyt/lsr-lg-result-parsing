@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Lsr\Lg\Results\LaserMaxx\Evo5;
 
 use Dibi\Row;
+use Lsr\Lg\Results\LaserMaxx\AccuracyBonus;
 use Lsr\Orm\Interfaces\InsertExtendInterface;
 
 /**
@@ -16,16 +17,20 @@ use Lsr\Orm\Interfaces\InsertExtendInterface;
 class Scoring implements InsertExtendInterface
 {
     public function __construct(
-        public int $deathOther = 0,
-        public int $hitOther = 0,
-        public int $deathOwn = 0,
-        public int $hitOwn = 0,
-        public int $hitPod = 0,
-        public int $shot = 0,
-        public int $machineGun = 0,
-        public int $invisibility = 0,
-        public int $agent = 0,
-        public int $shield = 0,
+        public int           $deathOther = 0,
+        public int           $hitOther = 0,
+        public int           $deathOwn = 0,
+        public int           $hitOwn = 0,
+        public int           $hitPod = 0,
+        public int           $shot = 0,
+        public int           $machineGun = 0,
+        public int           $invisibility = 0,
+        public int           $agent = 0,
+        public int           $shield = 0,
+        public int           $highscore = 0,
+        public AccuracyBonus $accuracyBonus = AccuracyBonus::OFF,
+        public int           $accuracyThreshold = 0,
+        public int           $accuracyThresholdBonus = 0,
     ) {}
 
     public static function parseRow(Row $row) : static {
@@ -40,6 +45,10 @@ class Scoring implements InsertExtendInterface
             $row->scoring_power_invisibility ?? 0,
             $row->scoring_power_agent ?? 0,
             $row->scoring_power_shield ?? 0,
+            $row->highscore ?? 0,
+            AccuracyBonus::tryFrom($row->scoring_accuracy_bonus ?? 0) ?? AccuracyBonus::OFF,
+            $row->scoring_accuracy_threshold ?? 0,
+            $row->scoring_accuracy_threshold_bonus ?? 0,
         );
     }
 
@@ -59,5 +68,9 @@ class Scoring implements InsertExtendInterface
         $data['scoring_power_invisibility'] = $this->invisibility;
         $data['scoring_power_agent'] = $this->agent;
         $data['scoring_power_shield'] = $this->shield;
+        $data['scoring_highscore'] = $this->highscore;
+        $data['scoring_accuracy_bonus'] = $this->accuracyBonus->value;
+        $data['scoring_accuracy_threshold'] = $this->accuracyThreshold;
+        $data['scoring_accuracy_threshold_bonus'] = $this->accuracyThresholdBonus;
     }
 }

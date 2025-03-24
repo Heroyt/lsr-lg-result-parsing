@@ -23,27 +23,12 @@ interface Evo6GameInterface extends LaserMaxxGameInterface
         set;
     }
 
-    public VipSettings $vipSettings {
-        get;
-        set;
-    }
-
-    public ZombieSettings $zombieSettings {
-        get;
-        set;
-    }
-
     public HitGainSettings $hitGainSettings {
         get;
         set;
     }
 
     public RespawnSettings $respawnSettings {
-        get;
-        set;
-    }
-
-    public bool $blastShots {
         get;
         set;
     }

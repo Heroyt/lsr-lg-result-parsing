@@ -39,4 +39,29 @@ interface LaserMaxxGameInterface extends GameInterface
         set;
     }
 
+    public bool $blastShots {
+        get;
+        set;
+    }
+
+    public bool $switchOn {
+        get;
+        set;
+    }
+
+    public int $switchLives {
+        get;
+        set;
+    }
+
+    public ZombieSettings $zombieSettings {
+        get;
+        set;
+    }
+
+    public VipSettings $vipSettings {
+        get;
+        set;
+    }
+
 }

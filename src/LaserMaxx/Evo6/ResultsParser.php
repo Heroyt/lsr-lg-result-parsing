@@ -9,6 +9,9 @@ use Lsr\Lg\Results\AbstractResultsParser;
 use Lsr\Lg\Results\Enums\GameModeType;
 use Lsr\Lg\Results\Exception\ResultsParseException;
 use Lsr\Lg\Results\Interface\Models\ModifyScoresMode;
+use Lsr\Lg\Results\LaserMaxx\AccuracyBonus;
+use Lsr\Lg\Results\LaserMaxx\VipSettings;
+use Lsr\Lg\Results\LaserMaxx\ZombieSettings;
 use Lsr\Lg\Results\Timing;
 use Lsr\Lg\Results\WithMetadata;
 use Lsr\Logging\Exceptions\DirectoryCreationException;
@@ -392,17 +395,20 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [0] ON / OFF
                 // [1] Number of hits before switch
                 case 'SWITCHSTYLE':
-                    // ASSISTEDSTYLE contains special mode settings
-                    // [0] ON / OFF
-                    // [1] Blast shots
-                    // [2] Double hits on/off
-                    // [3] Ignore hits from teammates
-                    // [4] Allow one trigger shooting
-                    // [5] Change respawn
-                    // [6] Respawn time
-                    // [7] Ignore team hits scoring
-                    // [8] Tenfold hits on/off
-                    // [9] Bazooka on/off
+                    $game->switchOn = ((int) ($args[0] ?? 0)) !== 0;
+                    $game->switchLives = (int) ($args[1] ?? 2);
+                    break;
+                // ASSISTEDSTYLE contains special mode settings
+                // [0] ON / OFF
+                // [1] Blast shots
+                // [2] Double hits on/off
+                // [3] Ignore hits from teammates
+                // [4] Allow one trigger shooting
+                // [5] Change respawn
+                // [6] Respawn time
+                // [7] Ignore team hits scoring
+                // [8] Tenfold hits on/off
+                // [9] Bazooka on/off
                 case 'ASSISTEDSTYLE':
                     // HITSTREAKSTYLE contains special mode settings
                     // [0] ON / OFF

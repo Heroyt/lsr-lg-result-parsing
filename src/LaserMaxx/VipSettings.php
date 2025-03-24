@@ -1,9 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Lsr\Lg\Results\LaserMaxx\Evo6;
+namespace Lsr\Lg\Results\LaserMaxx;
 
 use Dibi\Row;
+use Lsr\Lg\Results\LaserMaxx\Evo6\HitType;
 use Lsr\Orm\Interfaces\InsertExtendInterface;
 
 /**
@@ -13,6 +14,7 @@ class VipSettings implements InsertExtendInterface
 {
 
     public function __construct(
+        public bool $on = false,
         public int     $lives = 0,
         public int     $ammo = 0,
         public int     $respawn = 5,
@@ -28,6 +30,7 @@ class VipSettings implements InsertExtendInterface
      */
     public static function parseRow(Row $row) : ?static {
         return new static(
+            on                : $row->vip_on,
             lives             : $row->vip_lives,
             ammo              : $row->vip_ammo,
             respawn           : $row->vip_respawn,
@@ -43,6 +46,7 @@ class VipSettings implements InsertExtendInterface
      * @inheritDoc
      */
     public function addQueryData(array &$data) : void {
+        $data['vip_on'] = $this->on;
         $data['vip_lives'] = $this->lives;
         $data['vip_ammo'] = $this->ammo;
         $data['vip_respawn'] = $this->respawn;

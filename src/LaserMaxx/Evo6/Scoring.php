@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Lsr\Lg\Results\LaserMaxx\Evo6;
 
 use Dibi\Row;
+use Lsr\Lg\Results\LaserMaxx\AccuracyBonus;
 use Lsr\Orm\Interfaces\InsertExtendInterface;
 
 /**

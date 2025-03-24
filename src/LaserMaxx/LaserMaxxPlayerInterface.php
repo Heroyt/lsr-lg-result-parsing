@@ -64,6 +64,11 @@ interface LaserMaxxPlayerInterface extends PlayerInterface
         set;
     }
 
+    public int $scoreVip {
+        get;
+        set;
+    }
+
     public function getBonusCount() : int;
 
     public function getRemainingLives() : int;

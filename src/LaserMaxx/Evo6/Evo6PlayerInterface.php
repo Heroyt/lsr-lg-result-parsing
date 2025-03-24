@@ -21,11 +21,6 @@ interface Evo6PlayerInterface extends LaserMaxxPlayerInterface
         set;
     }
 
-    public int $scoreVip {
-        get;
-        set;
-    }
-
     public int $scoreActivity {
         get;
         set;
