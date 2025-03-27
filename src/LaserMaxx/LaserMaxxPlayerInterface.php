@@ -32,6 +32,10 @@ interface LaserMaxxPlayerInterface extends PlayerInterface
         get;
         set;
     }
+    public int $livesRest {
+        get;
+        set;
+    }
     public int $minesHits {
         get;
         set;

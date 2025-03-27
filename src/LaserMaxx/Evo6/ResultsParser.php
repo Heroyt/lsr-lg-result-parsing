@@ -640,6 +640,8 @@ abstract class ResultsParser extends AbstractResultsParser
                     $player->deathsOther = (int) ($args[14] ?? 0);
                     $player->deathsOwn = (int) ($args[15] ?? 0);
 
+                    $player->livesRest = max(0, (int) ($args[16] ?? 0));
+
                     $player->bonuses = (int) ($args[26] ?? 0);
                     $player->scoreVip = (int) ($args[19] ?? 0);
                     $player->scoreActivity = (int) ($args[21] ?? 0);
