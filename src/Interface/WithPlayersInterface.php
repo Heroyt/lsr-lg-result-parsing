@@ -10,6 +10,9 @@ use Lsr\Lg\Results\PlayerCollection;
  * Interface for classes that have players
  *
  * @template P of PlayerInterface
+ * @property class-string<P> $playerClass
+ * @property PlayerCollection<P> $players
+ * @property PlayerCollection<P> $playersSorted
  */
 interface WithPlayersInterface
 {

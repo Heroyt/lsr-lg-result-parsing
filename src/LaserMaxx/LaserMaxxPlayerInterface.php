@@ -5,6 +5,12 @@ namespace Lsr\Lg\Results\LaserMaxx;
 
 use Lsr\Lg\Results\Interface\Models\PlayerInterface;
 
+/**
+ * @template G of LaserMaxxGameInterface
+ * @template T of LaserMaxxTeamInterface
+ * @template U of \Lsr\LaserLiga\PlayerInterface
+ * @extends PlayerInterface<G, T, U>
+ */
 interface LaserMaxxPlayerInterface extends PlayerInterface
 {
 

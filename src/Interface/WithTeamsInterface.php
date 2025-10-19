@@ -8,6 +8,9 @@ use Lsr\Lg\Results\TeamCollection;
 
 /**
  * @template T of TeamInterface
+ * @property TeamCollection<T> $teams
+ * @property TeamCollection<T> $teamsSorted
+ * @property class-string<T> $teamClass
  */
 interface WithTeamsInterface
 {

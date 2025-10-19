@@ -6,6 +6,12 @@ namespace Lsr\Lg\Results\Interface\Models;
 use Lsr\LaserLiga\PlayerInterface as UserInterface;
 use Lsr\Lg\Results\Interface\WithGameInterface;
 
+/**
+ * @template G of GameInterface
+ * @template T of TeamInterface
+ * @template U of UserInterface
+ * @extends WithGameInterface<G>
+ */
 interface PlayerInterface extends ModelInterface, WithGameInterface
 {
 
@@ -54,17 +60,19 @@ interface PlayerInterface extends ModelInterface, WithGameInterface
         set;
     }
 
+    /** @var T|null */
     public ?TeamInterface $team {
         get;
         set;
     }
 
+    /** @var U|null */
     public ?UserInterface $user {
         get;
         set;
     }
 
-    /** @var PlayerHitInterface[]|null */
+    /** @var PlayerHitInterface<static>[]|null */
     public ?array $hitPlayers {
         get;
         set;
@@ -79,10 +87,12 @@ interface PlayerInterface extends ModelInterface, WithGameInterface
     public int $miss {
         get;
     }
+    /** @var static|null */
     public ?PlayerInterface $favouriteTarget {
         get;
         set;
     }
+    /** @var static|null */
     public ?PlayerInterface $favouriteTargetOf {
         get;
         set;
@@ -99,17 +109,26 @@ interface PlayerInterface extends ModelInterface, WithGameInterface
     public function saveHits() : bool;
 
     /**
-     * @return PlayerHitInterface[]
+     * @return PlayerHitInterface<static>[]
      */
     public function loadHits() : array;
 
     /**
-     * @return PlayerHitInterface[]
+     * @return PlayerHitInterface<static>[]
      */
     public function getHitsPlayers() : array;
 
+    /**
+     * @param static $player
+     * @param int $count
+     * @return $this
+     */
     public function addHits(PlayerInterface $player, int $count = 1) : static;
 
+    /**
+     * @param static $player
+     * @return int
+     */
     public function getHitsPlayer(PlayerInterface $player) : int;
 
 
@@ -133,6 +152,9 @@ interface PlayerInterface extends ModelInterface, WithGameInterface
 
     public function getExpectedAverageTeammateHitCount() : float;
 
+    /**
+     * @return array<string, float>
+     */
     public function getSkillParts() : array;
-    
+
 }

@@ -7,6 +7,12 @@ use JsonSerializable;
 use Lsr\Lg\Results\Interface\WithGameInterface;
 use Lsr\Lg\Results\Interface\WithPlayersInterface;
 
+/**
+ * @template P of PlayerInterface
+ * @template G of GameInterface
+ * @extends WithPlayersInterface<P>
+ * @extends WithGameInterface<G>
+ */
 interface TeamInterface extends WithPlayersInterface, WithGameInterface, JsonSerializable, ModelInterface
 {
 

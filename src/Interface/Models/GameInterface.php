@@ -11,6 +11,14 @@ use Lsr\Lg\Results\Interface\WithPlayersInterface;
 use Lsr\Lg\Results\Interface\WithTeamsInterface;
 use Lsr\Lg\Results\Timing;
 
+/**
+ * @template T of TeamInterface
+ * @template P of PlayerInterface
+ * @template M of array<string,mixed>
+ * @extends WithTeamsInterface<T>
+ * @extends WithPlayersInterface<P>
+ * @extends WithMetaInterface<M>
+ */
 interface GameInterface extends WithMetaInterface, WithPlayersInterface, WithTeamsInterface, ModelInterface
 {
     public ?string $resultsFile {

@@ -6,6 +6,12 @@ namespace Lsr\Lg\Results\LaserMaxx;
 
 use Lsr\Lg\Results\Interface\Models\GameInterface;
 
+/**
+ * @template T of LaserMaxxTeamInterface
+ * @template P of LaserMaxxPlayerInterface
+ * @template M of array<string,mixed>
+ * @extends GameInterface<T, P, M>
+ */
 interface LaserMaxxGameInterface extends GameInterface
 {
     public int $fileNumber {

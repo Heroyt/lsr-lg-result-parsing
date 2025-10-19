@@ -3,15 +3,22 @@ declare(strict_types=1);
 
 namespace Lsr\Lg\Results\Interface\Models;
 
+/**
+ * @template P of PlayerInterface
+ * @property P $playerTarget
+ * @property P $playerShot
+ */
 interface PlayerHitInterface extends \JsonSerializable
 {
 
-    public PlayerInterface $playerShot {
+    /** @var P */
+    public PlayerInterface $playerTarget {
         get;
         set;
     }
 
-    public PlayerInterface $playerTarget {
+    /** @var P */
+    public PlayerInterface $playerShot {
         get;
         set;
     }
