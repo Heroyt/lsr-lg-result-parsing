@@ -28,11 +28,13 @@ class Timing implements InsertExtendInterface
     ) {}
 
     public static function parseRow(Row $row) : static {
-        /** @noinspection ProperNullCoalescingOperatorUsageInspection */
         return new static(
-            $row->timing_before ?? 0,
-            $row->timing_game_length ?? 0,
-            $row->timing_after ?? 0,
+        /** @phpstan-ignore cast.int */
+            (int)($row->timing_before ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->timing_game_length ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->timing_after ?? 0),
         );
     }
 

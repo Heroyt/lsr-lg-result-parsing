@@ -6,7 +6,7 @@ namespace Lsr\Lg\Results\LaserMaxx\Evo6;
 use Dibi\Row;
 use Lsr\Orm\Interfaces\InsertExtendInterface;
 
-class HitGainSettings implements InsertExtendInterface
+final class HitGainSettings implements InsertExtendInterface
 {
 
     public function __construct(
@@ -17,10 +17,13 @@ class HitGainSettings implements InsertExtendInterface
     /**
      * @inheritDoc
      */
-    public static function parseRow(Row $row) : ?static {
+    public static function parseRow(Row $row): static
+    {
         return new static(
-            ammo : $row->hit_gain_ammo,
-            lives: $row->hit_gain_lives,
+        /** @phpstan-ignore cast.int */
+            ammo: (int)$row->hit_gain_ammo,
+            /** @phpstan-ignore cast.int */
+            lives: (int)$row->hit_gain_lives,
         );
     }
 

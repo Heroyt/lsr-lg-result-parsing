@@ -5,11 +5,12 @@ namespace Lsr\Lg\Results;
 
 use Lsr\Lg\Results\Interface\Collections\CollectionQueryInterface;
 use Lsr\Lg\Results\Interface\Models\TeamInterface;
+use Lsr\Orm\Model;
 
 /**
  * A collection for team models
  *
- * @template T of TeamInterface
+ * @template T of TeamInterface&Model
  *
  * @property T[] $data
  *
@@ -17,6 +18,10 @@ use Lsr\Lg\Results\Interface\Models\TeamInterface;
  */
 class TeamCollection extends Collections\AbstractCollection
 {
+    /**
+     * @var class-string<T>
+     * @phpstan-ignore property.defaultValue
+     */
     public string $type = TeamInterface::class;
 
     /**

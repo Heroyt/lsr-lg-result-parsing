@@ -2,7 +2,7 @@
   "name": "lsr/lg-result-parsing",
   "description": "Result parsing for laser game - LaserMaxx Evo5, Evo6, Laserforce",
   "type": "library",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "repositories": [
     {
       "type": "composer",
@@ -13,7 +13,10 @@
   "autoload": {
     "psr-4": {
       "Lsr\\Lg\\Results\\": "src/"
-    }
+    },
+    "files": [
+      "include/functions.php"
+    ]
   },
   "authors": [
     {

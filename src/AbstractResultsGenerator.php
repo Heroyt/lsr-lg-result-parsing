@@ -6,6 +6,10 @@ namespace Lsr\Lg\Results;
 use Lsr\Lg\Results\Interface\Models\GameInterface;
 use Lsr\Lg\Results\Interface\ResultsGeneratorInterface;
 
+/**
+ * @template Game of GameInterface
+ * @implements ResultsGeneratorInterface<Game>
+ */
 abstract class AbstractResultsGenerator implements ResultsGeneratorInterface
 {
     public function generateToFile(GameInterface $game, string $filename) : bool {

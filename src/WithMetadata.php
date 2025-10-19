@@ -3,8 +3,9 @@
 namespace Lsr\Lg\Results;
 
 use JsonException;
-use Lsr\LaserLiga\PlayerProviderInterface;
 use Lsr\Lg\Results\Interface\Models\GameInterface;
+use Lsr\Lg\Results\Interface\Models\PlayerInterface;
+use Lsr\Lg\Results\Interface\Models\TeamInterface;
 use Lsr\Orm\Exceptions\ModelNotFoundException;
 use Lsr\Orm\Exceptions\ValidationException;
 
@@ -16,14 +17,13 @@ trait WithMetadata
     /** @var int 5 minutes in seconds */
     protected const int MAX_LOAD_START_TIME_DIFFERENCE = 300;
 
-    protected readonly PlayerProviderInterface $playerProvider;
-
     /**
      * Decode game metadata
      *
      * @return array<string,string|numeric>
      */
-    protected function decodeMetadata(string $encoded) : array {
+    protected function decodeMetadata(string $encoded): array
+    {
         $encoded = trim($encoded);
         if ($encoded === '') {
             return [];
@@ -34,16 +34,17 @@ trait WithMetadata
             return [];
         }
         /** @var string|false $decodedJson */
-        $decodedJson = @gzinflate((string) $decodedJson);
+        $decodedJson = @gzinflate((string)$decodedJson);
         if ($decodedJson === false) {
             return [];
         }
         /** @var string|false $decodedJson */
-        $decodedJson = @gzinflate((string) $decodedJson);
+        $decodedJson = @gzinflate((string)$decodedJson);
         if ($decodedJson === false) {
             return [];
         }
         try {
+            /** @phpstan-ignore return.type */
             return json_decode($decodedJson, true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             // Ignore meta
@@ -54,14 +55,24 @@ trait WithMetadata
     /**
      * Check if metadata corresponds with the parsed game
      *
-     * @param  array<string, string|numeric>  $meta
-     * @param  Game  $game
+     * @template TTeam of TeamInterface
+     * @template TPlayer of PlayerInterface
+     * @template TMeta of array{
+     *      hash?: string,
+     *      mode?: string,
+     *      loadTime?: numeric,
+     *  }|array<string, mixed>
+     * @template TGame of GameInterface<TTeam, TPlayer, TMeta>
      *
-     * @post Sets metadata (Game::setMeta()) to the game if valid.
+     * @param TMeta $meta
+     * @param TGame $game
+     *
+     * @post Sets metadata (TGame::setMeta()) to the game if valid.
      *
      * @return bool
      */
-    protected function validateMetadata(array $meta, GameInterface $game) : bool {
+    protected function validateMetadata(array $meta, GameInterface $game): bool
+    {
         if (empty($meta)) {
             return false;
         }
@@ -69,24 +80,24 @@ trait WithMetadata
         if (!empty($meta['hash'])) {
             $players = [];
             foreach ($game->players as $player) {
-                $players[(int) $player->vest] = $player->vest.'-'.$player->name;
+                $players[(int)$player->vest] = $player->vest . '-' . $player->name;
             }
             ksort($players);
             // Calculate and compare hash
-            $hash = md5(strtolower($game->modeName).';'.implode(';', $players));
+            $hash = md5(strtolower($game->modeName) . ';' . implode(';', $players));
             if ($hash === $meta['hash']) {
                 $game->setMeta($meta);
                 return true;
             }
-            if (!empty($meta['mode'])) {
+            if (!empty($meta['mode']) && is_string($meta['mode'])) {
                 // Game modes must match
                 if (strtolower($meta['mode']) !== strtolower($game->modeName)) {
                     return false;
                 }
 
                 // Compare load time with game start time
-                if (!empty($meta['loadTime'])) {
-                    $loadTime = (int) $meta['loadTime'];
+                if (!empty($meta['loadTime']) && is_numeric($meta['loadTime'])) {
+                    $loadTime = (int)$meta['loadTime'];
                     $startTime = $game->start?->getTimestamp() ?? 0;
                     $diff = $startTime - $loadTime;
                     if ($diff > 0 && $diff < $this::MAX_LOAD_START_TIME_DIFFERENCE) {
@@ -103,22 +114,28 @@ trait WithMetadata
     /**
      * Set music mode information for the game from metadata
      *
-     * @param  Game  $game
-     * @param  array<string,string|numeric>  $meta
+     * @template TTeam of TeamInterface
+     * @template TPlayer of PlayerInterface
+     * @template TMeta of array<string, mixed>
+     * @template TGame of GameInterface<TTeam, TPlayer, TMeta>
+     *
+     * @param TGame $game
+     * @param TMeta $meta
      *
      * @pre Metadata is validated
      * @post
      *
      * @return void
      */
-    protected function setMusicModeFromMeta(GameInterface $game, array $meta) : void {
-        if (empty($meta['music']) || ((int) $meta['music']) < 1) {
+    protected function setMusicModeFromMeta(GameInterface $game, array $meta): void
+    {
+        if (empty($meta['music']) || !is_numeric($meta['music']) || ((int)$meta['music']) < 1) {
             return;
         }
 
         try {
-            $game->music = ($this::MUSIC_CLASS)::get((int) $meta['music']);
-        } catch (ModelNotFoundException | ValidationException) {
+            $game->music = ($this::MUSIC_CLASS)::get((int)$meta['music']);
+        } catch (ModelNotFoundException|ValidationException) {
             // Ignore
             $game->music = null;
         }
@@ -127,26 +144,34 @@ trait WithMetadata
     /**
      * Set group information for the game from metadata
      *
-     * @param  Game  $game
-     * @param  array<string,string|numeric>  $meta
+     * @template TTeam of TeamInterface
+     * @template TPlayer of PlayerInterface
+     * @template TMeta of array<string, mixed>
+     * @template TGame of GameInterface<TTeam, TPlayer, TMeta>
+     *
+     * @param TGame $game
+     * @param TMeta $meta
      *
      * @pre  Metadata is validated
-     * @post The group is set on the Game object. If necessary, the new group is created
+     * @post The group is set on the TGame object. If necessary, the new group is created
      *
      * @return void
      */
-    protected function setGroupFromMeta(GameInterface $game, array $meta) : void {
+    protected function setGroupFromMeta(GameInterface $game, array $meta): void
+    {
         if (empty($meta['group'])) {
             return;
         }
 
-        if ($meta['group'] !== 'new') {
+        if ($meta['group'] !== 'new' && is_numeric($meta['group'])) {
             try {
                 // Find existing group
-                $group = ($this::GAME_GROUP_CLASS)::get((int) $meta['group']);
-                // If found, clear its players cache to account for the newly-added (imported) game
-                $group->clearCache();
-            } catch (ModelNotFoundException | ValidationException) {
+                $group = ($this::GAME_GROUP_CLASS)::get((int)$meta['group']);
+                if (method_exists($group, 'clearCache')) { // It might not use the WithCache trait
+                    // If found, clear its players cache to account for the newly-added (imported) game
+                    $group->clearCache();
+                }
+            } catch (ModelNotFoundException|ValidationException) {
                 // Ignore
             }
         }
@@ -166,8 +191,13 @@ trait WithMetadata
     /**
      * Set all player information from metadata
      *
-     * @param  Game  $game
-     * @param  array<string,string|numeric>  $meta
+     * @template TTeam of TeamInterface
+     * @template TPlayer of PlayerInterface
+     * @template TMeta of array<string, mixed>
+     * @template TGame of GameInterface<TTeam, TPlayer, TMeta>
+     *
+     * @param TGame $game
+     * @param TMeta $meta
      *
      * @pre  Metadata is validated
      * @post All players have their names set in UTF-8
@@ -175,18 +205,18 @@ trait WithMetadata
      *
      * @return void
      */
-    protected function setPlayersMeta(GameInterface $game, array $meta) : void {
-        /** @var Player $player */
+    protected function setPlayersMeta(GameInterface $game, array $meta): void
+    {
         foreach ($game->players as $player) {
             // Names from game are strictly ASCII
             // If a name contained any non ASCII character, it is coded in the metadata
-            if (!empty($meta['p'.$player->vest.'n']) && is_string($meta['p'.$player->vest.'n'])) {
-                $player->name = $meta['p'.$player->vest.'n'];
+            if (!empty($meta['p' . $player->vest . 'n']) && is_string($meta['p' . $player->vest . 'n'])) {
+                $player->name = $meta['p' . $player->vest . 'n'];
             }
 
             // Check for player's user code
-            if (!empty($meta['p'.$player->vest.'u'])) {
-                $code = $meta['p'.$player->vest.'u'];
+            if (!empty($meta['p' . $player->vest . 'u'])) {
+                $code = $meta['p' . $player->vest . 'u'];
                 assert(is_string($code));
                 $user = ($this::USER_CLASS)::getByCode($code);
 
@@ -212,21 +242,26 @@ trait WithMetadata
     /**
      * Set all team information from metadata
      *
-     * @param  Game  $game
-     * @param  array<string,string|numeric>  $meta
+     * @template TTeam of TeamInterface
+     * @template TPlayer of PlayerInterface
+     * @template TMeta of array<string, mixed>
+     * @template TGame of GameInterface<TTeam, TPlayer, TMeta>
+     *
+     * @param TGame $game
+     * @param TMeta $meta
      *
      * @pre  Metadata is validated
      * @post All teams have their names set in UTF-8
      *
      * @return void
      */
-    protected function setTeamsMeta(GameInterface $game, array $meta) : void {
-        /** @var Team $team */
+    protected function setTeamsMeta(GameInterface $game, array $meta): void
+    {
         foreach ($game->teams as $team) {
             // Names from game are strictly ASCII
             // If a name contained any non ASCII character, it is coded in the metadata
-            if (!empty($meta['t'.$team->color.'n'])) {
-                $team->name = (string) $meta['t'.$team->color.'n'];
+            if (!empty($meta['t' . $team->color . 'n']) && (is_string($meta['t' . $team->color . 'n']) || is_numeric($meta['t' . $team->color . 'n']))) {
+                $team->name = (string)$meta['t' . $team->color . 'n'];
             }
         }
     }

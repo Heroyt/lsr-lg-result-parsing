@@ -3,8 +3,15 @@ declare(strict_types=1);
 
 namespace Lsr\Lg\Results\LaserMaxx\Evo6;
 
+use Lsr\LaserLiga\PlayerInterface;
 use Lsr\Lg\Results\LaserMaxx\LaserMaxxPlayerInterface;
 
+/**
+ * @template G of Evo6GameInterface
+ * @template T of Evo6TeamInterface
+ * @template U of PlayerInterface
+ * @extends LaserMaxxPlayerInterface<G, T, U>
+ */
 interface Evo6PlayerInterface extends LaserMaxxPlayerInterface
 {
 

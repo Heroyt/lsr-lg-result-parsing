@@ -18,6 +18,12 @@ interface GameGroupInterface extends ModelInterface
     }
 
     public function getPlayerByName(string $name): ?GroupPlayerInterface;
+
+    /**
+     * @template Player of PlayerInterface
+     * @param Player $player
+     * @return GroupPlayerInterface|null
+     */
     public function getPlayer(PlayerInterface $player): ?GroupPlayerInterface;
 
     /**

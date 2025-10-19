@@ -53,7 +53,7 @@ interface ResultsParserInterface
     /**
      * Parse a game results file and return a parsed object
      *
-     * @return GameInterface
+     * @return G
      */
     public function parse() : GameInterface;
 }

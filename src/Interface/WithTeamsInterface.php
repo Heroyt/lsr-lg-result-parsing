@@ -5,11 +5,10 @@ namespace Lsr\Lg\Results\Interface;
 
 use Lsr\Lg\Results\Interface\Models\TeamInterface;
 use Lsr\Lg\Results\TeamCollection;
+use Lsr\Orm\Model;
 
 /**
  * @template T of TeamInterface
- * @property TeamCollection<T> $teams
- * @property TeamCollection<T> $teamsSorted
  * @property class-string<T> $teamClass
  */
 interface WithTeamsInterface
@@ -23,19 +22,19 @@ interface WithTeamsInterface
     public string $teamClass {
         get;
     }
-    /** @var TeamCollection<T> */
+    /** @var TeamCollection<T&Model> */
     public TeamCollection $teams {
         get;
         set;
     }
-    /** @var TeamCollection<T> */
+    /** @var TeamCollection<T&Model> */
     public TeamCollection $teamsSorted {
         get;
         set;
     }
 
     /**
-     * @return TeamCollection<T>
+     * @return TeamCollection<T&Model>
      */
     public function loadTeams() : TeamCollection;
 

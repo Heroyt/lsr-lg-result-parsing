@@ -30,25 +30,37 @@ interface GameModeInterface extends ModelInterface
     }
 
 
+    /**
+     * @return bool
+     * @phpstan-assert-if-true TeamGameModeInterface $this
+     */
     public function isTeam() : bool;
 
+    /**
+     * @return bool
+     * @phpstan-assert-if-true SoloGameModeInterface $this
+     */
     public function isSolo() : bool;
 
-    public function getWin(GameInterface $game) : PlayerInterface | TeamInterface | null;
-
+    /**
+     * @template Player of PlayerInterface
+     * @template Team of TeamInterface
+     * @template Meta of array<string, mixed>
+     * @template Game of GameInterface<Team, Player, Meta>
+     * @param Game $game
+     * @return void
+     */
     public function recalculateScores(GameInterface $game) : void;
 
+    /**
+     * @template Player of PlayerInterface
+     * @template Team of TeamInterface
+     * @template Meta of array<string, mixed>
+     * @template Game of GameInterface<Team, Player, Meta>
+     * @param Game $game
+     * @return void
+     */
     public function reorderGame(GameInterface $game) : void;
-
-    /**
-     * @return class-string<GameModeInterface>
-     */
-    public function getSoloAlternative() : string;
-
-    /**
-     * @return class-string<GameModeInterface>
-     */
-    public function getTeamAlternative() : string;
 
     public function getName() : string;
 }

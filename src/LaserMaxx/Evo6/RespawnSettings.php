@@ -6,7 +6,7 @@ namespace Lsr\Lg\Results\LaserMaxx\Evo6;
 use Dibi\Row;
 use Lsr\Orm\Interfaces\InsertExtendInterface;
 
-class RespawnSettings implements InsertExtendInterface
+final class RespawnSettings implements InsertExtendInterface
 {
 
     public function __construct(
@@ -16,9 +16,11 @@ class RespawnSettings implements InsertExtendInterface
     /**
      * @inheritDoc
      */
-    public static function parseRow(Row $row) : ?static {
+    public static function parseRow(Row $row): static
+    {
         return new static(
-            respawnLives: $row->respawn_lives,
+        /** @phpstan-ignore cast.int */
+            respawnLives: (int)$row->respawn_lives,
         );
     }
 

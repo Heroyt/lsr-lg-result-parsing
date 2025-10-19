@@ -31,33 +31,51 @@ class Scoring implements InsertExtendInterface
         public AccuracyBonus $accuracyBonus = AccuracyBonus::OFF,
         public int           $accuracyThreshold = 0,
         public int           $accuracyThresholdBonus = 0,
-    ) {}
+    )
+    {
+    }
 
-    public static function parseRow(Row $row) : static {
+    public static function parseRow(Row $row): static
+    {
         return new static(
-            $row->scoring_death_other ?? 0,
-            $row->scoring_hit_other ?? 0,
-            $row->scoring_death_own ?? 0,
-            $row->scoring_hit_own ?? 0,
-            $row->scoring_hit_pod ?? 0,
-            $row->scoring_shot ?? 0,
-            $row->scoring_power_machine_gun ?? 0,
-            $row->scoring_power_invisibility ?? 0,
-            $row->scoring_power_agent ?? 0,
-            $row->scoring_power_shield ?? 0,
-            $row->highscore ?? 0,
-            AccuracyBonus::tryFrom($row->scoring_accuracy_bonus ?? 0) ?? AccuracyBonus::OFF,
-            $row->scoring_accuracy_threshold ?? 0,
-            $row->scoring_accuracy_threshold_bonus ?? 0,
+        /** @phpstan-ignore cast.int */
+            (int)($row->scoring_death_other ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_hit_other ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_death_own ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_hit_own ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_hit_pod ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_shot ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_power_machine_gun ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_power_invisibility ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_power_agent ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_power_shield ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->highscore ?? 0),
+            /** @phpstan-ignore cast.int */
+            AccuracyBonus::tryFrom((int)($row->scoring_accuracy_bonus ?? 0)) ?? AccuracyBonus::OFF,
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_accuracy_threshold ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->scoring_accuracy_threshold_bonus ?? 0),
         );
     }
 
     /**
-     * @param  array<string,mixed>  $data
+     * @param array<string,mixed> $data
      *
      * @return void
      */
-    public function addQueryData(array &$data) : void {
+    public function addQueryData(array &$data): void
+    {
         $data['scoring_hit_other'] = $this->hitOther;
         $data['scoring_hit_own'] = $this->hitOwn;
         $data['scoring_death_other'] = $this->deathOther;

@@ -7,17 +7,8 @@ use Lsr\Lg\Results\Interface\Collections\CollectionInterface;
 use Lsr\Lg\Results\Interface\Collections\CollectionQueryFilterInterface;
 use Lsr\Orm\Model;
 
-/**
- * @template T of Model
- * @implements CollectionQueryFilterInterface<T>
- */
 class CollectionCompareFilter implements CollectionQueryFilterInterface
 {
-    /**
-     * @param  string  $property
-     * @param  Comparison  $comparison
-     * @param  T  $value
-     */
     public function __construct(
         public string     $property,
         public Comparison $comparison,
@@ -25,12 +16,19 @@ class CollectionCompareFilter implements CollectionQueryFilterInterface
     ) {}
 
     /**
-     * @param  CollectionInterface<T>  $collection
+     * @template M of Model
+     * @template Collection of CollectionInterface<M>
      *
-     * @return CollectionQueryFilterInterface<T>
+     * @param Collection $collection
+     *
+     * @return CollectionQueryFilterInterface
      */
     public function apply(CollectionInterface $collection) : CollectionQueryFilterInterface {
         $remove = [];
+        /**
+         * @var int $key
+         * @var M $value
+         */
         foreach ($collection as $key => $value) {
             if (property_exists($value, $this->property)) {
                 switch ($this->comparison) {

@@ -6,17 +6,14 @@
 
 namespace Lsr\Lg\Results\Interface\Collections;
 
-use Lsr\Orm\Model;
-
-/**
- * @template T of Model
- */
 interface CollectionQueryFilterInterface
 {
     /**
-     * @param  CollectionInterface<T>  $collection
+     * @template Collection of CollectionInterface
      *
-     * @return CollectionQueryFilterInterface<T>
+     * @param Collection $collection
+     *
+     * @return CollectionQueryFilterInterface
      */
     public function apply(CollectionInterface $collection) : CollectionQueryFilterInterface;
 }

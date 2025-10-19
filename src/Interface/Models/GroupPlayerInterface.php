@@ -59,6 +59,9 @@ interface GroupPlayerInterface
 
 	public function getAverageMisses(): float;
 
+    /**
+     * @return int[]
+     */
 	public function getMisses(): array;
 
 	public function getSumMisses(): int;

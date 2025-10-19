@@ -9,7 +9,7 @@ use Lsr\Orm\Interfaces\InsertExtendInterface;
 /**
  * Structure containing player's bonuses
  */
-class BonusCounts implements InsertExtendInterface
+final class BonusCounts implements InsertExtendInterface
 {
     public const array NAMES = [
         'agent'        => 'Agent',
@@ -29,14 +29,15 @@ class BonusCounts implements InsertExtendInterface
      * @inheritDoc
      */
     public static function parseRow(Row $row) : static {
-        /**
-         * @phpstan-ignore-next-line
-         */
-        return new self(
-            $row->bonus_agent ?? 0,
-            $row->bonus_invisibility ?? 0,
-            $row->bonus_machine_gun ?? 0,
-            $row->bonus_shield ?? 0,
+        return new static(
+        /** @phpstan-ignore cast.int */
+            (int)($row->bonus_agent ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->bonus_invisibility ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->bonus_machine_gun ?? 0),
+            /** @phpstan-ignore cast.int */
+            (int)($row->bonus_shield ?? 0),
         );
     }
 

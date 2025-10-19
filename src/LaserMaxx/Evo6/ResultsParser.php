@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Lsr\Lg\Results\LaserMaxx\Evo6;
 
 use DateTime;
+use DateTimeImmutable;
 use JsonException;
 use Lsr\Lg\Results\AbstractResultsParser;
 use Lsr\Lg\Results\Enums\GameModeType;
@@ -15,14 +16,18 @@ use Lsr\Lg\Results\LaserMaxx\ZombieSettings;
 use Lsr\Lg\Results\Timing;
 use Lsr\Lg\Results\WithMetadata;
 use Lsr\Logging\Exceptions\DirectoryCreationException;
-use Lsr\Logging\Logger;
 use Lsr\ObjectValidation\Exceptions\ValidationException;
+use Lsr\Orm\Model;
 
 
 /**
  * Result parser for the EVO6 system
  *
- * @extends AbstractResultsParser<Evo6GameInterface>
+ * @template-covariant Team of Evo6TeamInterface
+ * @template-covariant Player of Evo6PlayerInterface
+ * @template-covariant Meta of array{hash?:string,mode?:string,loadTime?:numeric}|array<string,mixed>
+ * @template Game of Evo6GameInterface<Team, Player, Meta>
+ * @extends AbstractResultsParser<Game>
  */
 abstract class ResultsParser extends AbstractResultsParser
 {
@@ -38,14 +43,16 @@ abstract class ResultsParser extends AbstractResultsParser
     /**
      * @inheritDoc
      */
-    public static function getFileGlob() : string {
+    public static function getFileGlob(): string
+    {
         return '*.game';
     }
 
     /**
      * @inheritDoc
      */
-    public static function checkFile(string $fileName = '', string $contents = '') : bool {
+    public static function checkFile(string $fileName = '', string $contents = ''): bool
+    {
         if (empty($fileName) && empty($contents)) {
             return false;
         }
@@ -61,32 +68,32 @@ abstract class ResultsParser extends AbstractResultsParser
         if (!$contents) {
             return false;
         }
-        return (bool) preg_match('/SITE{.*EVO-6 MAXX}#/', $contents);
+        return (bool)preg_match('/SITE{.*EVO-6 MAXX}#/', $contents);
     }
 
     /**
      * Parse a game results file and return a parsed object
      *
-     * @return Evo6GameInterface
+     * @return Game
      * @throws DirectoryCreationException
      * @throws ValidationException
      * @throws ResultsParseException
      * @throws JsonException
      * @noinspection PhpDuplicateSwitchCaseBodyInspection
      */
-    public function parse() : Evo6GameInterface {
-        /** @var Evo6GameInterface $game */
+    public function parse(): Evo6GameInterface
+    {
+        /** @var Game $game */
         $game = new ($this->gameClass);
 
         // Results file info
         $pathInfo = pathinfo($this->fileName);
         preg_match('/(\d+)/', $pathInfo['filename'], $matches);
         $game->resultsFile = $pathInfo['filename'];
-        $game->fileNumber = (int) ($matches[0] ?? 0);
+        $game->fileNumber = (int)($matches[0] ?? 0);
         $fTime = filemtime($this->fileName);
         if (is_int($fTime)) {
-            $game->fileTime = new DateTime();
-            $game->fileTime->setTimestamp($fTime);
+            $game->fileTime = new DateTimeImmutable()->setTimestamp($fTime);
         }
 
         // Parse file into lines and arguments
@@ -94,10 +101,10 @@ abstract class ResultsParser extends AbstractResultsParser
 
         // Check if parsing is successful and lines were found
         if (empty($titles) || empty($argsAll)) {
-            throw new ResultsParseException('The results file cannot be parsed: '.$this->fileName);
+            throw new ResultsParseException('The results file cannot be parsed: ' . $this->fileName);
         }
 
-        /** @var array<string,string> $meta Meta data from game */
+        /** @var Meta $meta Meta data from game */
         $meta = [];
 
         $keysVests = [];
@@ -115,7 +122,7 @@ abstract class ResultsParser extends AbstractResultsParser
                 case 'SITE':
                     if ($args[2] !== 'EVO-6 MAXX') {
                         throw new ResultsParseException(
-                            'Invalid results system type. - '.$title.': '.json_encode($args, JSON_THROW_ON_ERROR)
+                            'Invalid results system type. - ' . $title . ': ' . json_encode($args, JSON_THROW_ON_ERROR)
                         );
                     }
                     break;
@@ -131,7 +138,7 @@ abstract class ResultsParser extends AbstractResultsParser
                         throw new ResultsParseException('Invalid argument count in GAME');
                     }
                     [$gameNumber, , $dateStart, $dateEnd] = $args;
-                    $game->fileNumber = (int) $gameNumber;
+                    $game->fileNumber = (int)$gameNumber;
                     if ($dateStart !== $this::EMPTY_DATE) {
                         $date = DateTime::createFromFormat('YmdHis', $dateStart);
                         if ($date === false) {
@@ -161,9 +168,9 @@ abstract class ResultsParser extends AbstractResultsParser
                         throw new ResultsParseException('Invalid argument count in TIMING');
                     }
                     $game->timing = new Timing(
-                        before    : (int) $args[0],
-                        gameLength: (int) $args[1],
-                        after     : (int) $args[2]
+                        before: (int)$args[0],
+                        gameLength: (int)$args[1],
+                        after: (int)$args[2]
                     );
                     $dateStart = $args[3];
                     if ($dateStart !== $this::EMPTY_DATE) {
@@ -180,7 +187,7 @@ abstract class ResultsParser extends AbstractResultsParser
                             $date = null;
                         }
                         $game->end = $date;
-                        $game->finished = $now->getTimestamp() > ($game->end?->getTimestamp() + $game->timing->after);
+                        $game->finished = $now->getTimestamp() > ($game->end?->getTimestamp() + ($game->timing->after ?? 0));
                     }
                     break;
 
@@ -197,10 +204,10 @@ abstract class ResultsParser extends AbstractResultsParser
                         throw new ResultsParseException('Invalid argument count in STYLE');
                     }
                     $game->modeName = $args[0];
-                    $type = ((int) $args[2]) === 1 ? GameModeType::TEAM : GameModeType::SOLO;
+                    $type = ((int)$args[2]) === 1 ? GameModeType::TEAM : GameModeType::SOLO;
                     $game->mode = $this->gameModeProvider->find($args[0], $type, self::SYSTEM);
                     $game->gameType = $type;
-                    $game->gameStyleType = GameStyleType::tryFrom((int) $args[5]) ?? ($type === GameModeType::TEAM ?
+                    $game->gameStyleType = GameStyleType::tryFrom((int)$args[5]) ?? ($type === GameModeType::TEAM ?
                         GameStyleType::TEAM : GameStyleType::SOLO);
                     break;
 
@@ -212,9 +219,9 @@ abstract class ResultsParser extends AbstractResultsParser
                     if ($argsCount < 3) {
                         throw new ResultsParseException('Invalid argument count in STYLE');
                     }
-                    $game->respawn = (int) $args[0];
-                    $game->ammo = (int) $args[1];
-                    $game->lives = (int) $args[2];
+                    $game->respawn = (int)$args[0];
+                    $game->ammo = (int)$args[1];
+                    $game->lives = (int)$args[2];
                     break;
 
                 // STYLELEDS contains lightning settings
@@ -263,16 +270,16 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [28] Trigger speed (0 = fast, 1 = slow, 2 = very slow)
                 // [29] Sound of special shots (0 = normal, 105 = shotgun, 107 = rifle, 111 = pistol)
                 case 'STYLEFLAGS':
-                    $game->antiStalking = ((int) ($args[5] ?? 0)) !== 0;
-                    $game->blastShots = ((int) ($args[6] ?? 0)) !== 0;
-                    $game->allowFriendlyFire = ((int) ($args[7] ?? 0)) !== 0;
-                    $reloading = ((int) ($args[26] ?? 0)) !== 0;
+                    $game->antiStalking = ((int)($args[5] ?? 0)) !== 0;
+                    $game->blastShots = ((int)($args[6] ?? 0)) !== 0;
+                    $game->allowFriendlyFire = ((int)($args[7] ?? 0)) !== 0;
+                    $reloading = ((int)($args[26] ?? 0)) !== 0;
                     if ($reloading) {
-                        $clips = (int) ($args[27] ?? 0);
+                        $clips = (int)($args[27] ?? 0);
                         $game->ammo = $clips & 0xFF;      // First byte (LSB)
                         $game->reloadClips = $clips >> 8; // Second byte (MSB)
                     }
-                    $game->triggerSpeed = TriggerSpeed::tryFrom((int) ($args[28] ?? 0)) ?? TriggerSpeed::FAST;
+                    $game->triggerSpeed = TriggerSpeed::tryFrom((int)($args[28] ?? 0)) ?? TriggerSpeed::FAST;
                     break;
                 // STYLESOUNDS
                 // [0] Sample table: default (255), LaserMaxx (0), Unused (1), LaserTrooper (2), unused (3), Try this one! (4)
@@ -302,22 +309,22 @@ abstract class ResultsParser extends AbstractResultsParser
                         throw new ResultsParseException('Invalid argument count in SCORING');
                     }
                     $game->scoring = new Scoring(
-                        deathOther             : (int) $args[0],
-                        hitOther               : (int) $args[1],
-                        deathOwn               : (int) $args[2],
-                        hitOwn                 : (int) $args[3],
-                        hitPod                 : (int) $args[4],
-                        shot                   : (int) $args[5],
-                        highscore              : (int) $args[10],
-                        accuracyBonus          : AccuracyBonus::tryFrom((int) ($args[11] ?? 0)) ?? AccuracyBonus::OFF,
-                        accuracyThreshold      : (int) $args[12],
-                        accuracyThresholdBonus : (int) $args[13],
-                        encouragementBonus     : EncouragementBonus::tryFrom(
-                        (int) ($args[14] ?? 0)
+                        deathOther: (int)$args[0],
+                        hitOther: (int)$args[1],
+                        deathOwn: (int)$args[2],
+                        hitOwn: (int)$args[3],
+                        hitPod: (int)$args[4],
+                        shot: (int)$args[5],
+                        highscore: (int)$args[10],
+                        accuracyBonus: AccuracyBonus::tryFrom((int)($args[11] ?? 0)) ?? AccuracyBonus::OFF,
+                        accuracyThreshold: (int)$args[12],
+                        accuracyThresholdBonus: (int)$args[13],
+                        encouragementBonus: EncouragementBonus::tryFrom(
+                        (int)($args[14] ?? 0)
                     ) ?? EncouragementBonus::OFF,
-                        encouragementBonusScore: (int) $args[15],
-                        power                  : (int) $args[16],
-                        penalty                : (int) $args[17]
+                        encouragementBonusScore: (int)$args[15],
+                        power: (int)$args[16],
+                        penalty: (int)$args[17]
                     );
                     break;
 
@@ -358,20 +365,20 @@ abstract class ResultsParser extends AbstractResultsParser
                         throw new ResultsParseException('Invalid argument count in VIPSTYLE');
                     }
                     $hitType = match (true) {
-                        ((int) $args[3]) !== 0 => HitType::BAZOOKA,
-                        ((int) $args[8]) !== 0 => HitType::DOUBLE,
-                        ((int) $args[9]) !== 0 => HitType::TENFOLD,
-                        default                => HitType::NORMAL
+                        ((int)$args[3]) !== 0 => HitType::BAZOOKA,
+                        ((int)$args[8]) !== 0 => HitType::DOUBLE,
+                        ((int)$args[9]) !== 0 => HitType::TENFOLD,
+                        default => HitType::NORMAL
                     };
                     $game->vipSettings = new VipSettings(
-                        lives             : (int) $args[1],
-                        ammo              : (int) $args[2],
-                        respawn           : (((int) $args[12]) !== 0) ? (int) $args[13] : $game->respawn,
-                        killTeam          : ((int) $args[5]) !== 0,
-                        vipHitScore       : (int) $args[6],
-                        hitType           : $hitType,
-                        blastShots        : ((int) $args[14]) !== 0,
-                        ignoreTeammateHits: ((int) $args[10]) !== 0
+                        lives: (int)$args[1],
+                        ammo: (int)$args[2],
+                        respawn: (((int)$args[12]) !== 0) ? (int)$args[13] : $game->respawn,
+                        killTeam: ((int)$args[5]) !== 0,
+                        vipHitScore: (int)$args[6],
+                        hitType: $hitType,
+                        blastShots: ((int)$args[14]) !== 0,
+                        ignoreTeammateHits: ((int)$args[10]) !== 0
                     );
                     break;
                 // VAMPIRESTYLE contains special mode settings (Zombies)
@@ -384,19 +391,19 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [6] Rainbow LED
                 case 'VAMPIRESTYLE':
                     $game->zombieSettings = new ZombieSettings(
-                        lives           : (int) $args[3],
-                        ammo            : (int) $args[4],
-                        infectHits      : ((int) $args[5]) + 1,
-                        zombieSpecial   : ((int) $args[1]) !== 0,
-                        zombieTeamNumber: (int) $args[2]
+                        lives: (int)$args[3],
+                        ammo: (int)$args[4],
+                        infectHits: ((int)$args[5]) + 1,
+                        zombieSpecial: ((int)$args[1]) !== 0,
+                        zombieTeamNumber: (int)$args[2]
                     );
                     break;
                 // SWITCHSTYLE contains special mode settings - Barvičky
                 // [0] ON / OFF
                 // [1] Number of hits before switch
                 case 'SWITCHSTYLE':
-                    $game->switchOn = ((int) ($args[0] ?? 0)) !== 0;
-                    $game->switchLives = (int) ($args[1] ?? 2);
+                    $game->switchOn = ((int)($args[0] ?? 0)) !== 0;
+                    $game->switchLives = (int)($args[1] ?? 2);
                     break;
                 // ASSISTEDSTYLE contains special mode settings
                 // [0] ON / OFF
@@ -428,13 +435,13 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [1] Bonus points for activity
                 // [2] Active LEDs (0 = normal, 1 = off when stationary, 2 = off when active)
                 case 'ACTIVITYSTYLE':
-                    $game->scoring->activity = (int) ($args[1] ?? 0);
+                    $game->scoring->activity = (int)($args[1] ?? 0);
                     break;
                 // KNOCKOUTSTYLE contains special mode settings
                 // [0] ON / OFF
                 // [1] Points for each higher knockout rank
                 case 'KNOCKOUTSTYLE':
-                    $game->scoring->knockout = (int) ($args[1] ?? 0);
+                    $game->scoring->knockout = (int)($args[1] ?? 0);
                     break;
                 // HITGAINSTYLE contains special mode settings
                 // [0] Add ammo for each hit
@@ -442,8 +449,8 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [2] Add minutes for each hit (compatibility field)
                 case 'HITGAINSTYLE':
                     $game->hitGainSettings = new HitGainSettings(
-                        ammo : (int) ($args[0] ?? 0),
-                        lives: (int) ($args[1] ?? 0)
+                        ammo: (int)($args[0] ?? 0),
+                        lives: (int)($args[1] ?? 0)
                     );
                     break;
                 // CROSSFIRESTYLE contains special mode settings
@@ -465,7 +472,7 @@ abstract class ResultsParser extends AbstractResultsParser
                 // [2] Respawn after (seconds: 30/60)
                 case 'RESPAWNSTYLE':
                     $game->respawnSettings = new RespawnSettings(
-                        respawnLives: (int) ($args[1] ?? 0)
+                        respawnLives: (int)($args[1] ?? 0)
                     );
                     break;
                 // MINESTYLE contains pods settings
@@ -483,7 +490,7 @@ abstract class ResultsParser extends AbstractResultsParser
                 case 'GROUP':
                     if ($argsCount !== 3) {
                         throw new ResultsParseException(
-                            'Invalid argument count in GROUP - '.$argsCount.' '.json_encode(
+                            'Invalid argument count in GROUP - ' . $argsCount . ' ' . json_encode(
                                 $args,
                                 JSON_THROW_ON_ERROR
                             )
@@ -506,16 +513,16 @@ abstract class ResultsParser extends AbstractResultsParser
                     if ($argsCount !== 8) {
                         throw new ResultsParseException('Invalid argument count in PACK');
                     }
-                    /** @var Evo6PlayerInterface $player */
+                    /** @var Player&Model $player */
                     $player = new ($game->playerClass);
-                    $game->players->set($player, (int) $args[0]);
+                    $game->players->set($player, (int)$args[0]);
                     $player->setGame($game);
-                    $player->vest = (int) $args[0];
+                    $player->vest = (int)$args[0];
                     $keysVests[$player->vest] = $currKey++;
                     $player->name = substr($args[1], 0, 15);
-                    $player->teamNum = (int) $args[2];
-                    $player->vip = ((int) $args[4]) !== 0;
-                    $player->birthday = ((int) $args[7]) !== 0;
+                    $player->teamNum = (int)$args[2];
+                    $player->vip = ((int)$args[4]) !== 0;
+                    $player->birthday = ((int)$args[7]) !== 0;
                     break;
 
                 // TEAM contains team info
@@ -526,23 +533,23 @@ abstract class ResultsParser extends AbstractResultsParser
                     if ($argsCount !== 3) {
                         throw new ResultsParseException('Invalid argument count in TEAM');
                     }
-                    /** @var Evo6TeamInterface $team */
+                    /** @var Team&Model $team */
                     $team = new ($game->teamClass);
-                    $game->teams->set($team, (int) $args[0]);
+                    $game->teams->set($team, (int)$args[0]);
                     $team->setGame($game);
                     $team->name = substr($args[1], 0, 15);
-                    $team->color = (int) $args[0];
-                    $team->playerCount = (int) $args[2];
+                    $team->color = (int)$args[0];
+                    $team->playerCount = (int)$args[2];
 
                     // Default team name
                     if ($team->name === '') {
                         $team->name = match ($team->color) {
-                            0       => lang('Red team'),
-                            1       => lang('Green team'),
-                            2       => lang('Blue team'),
-                            3       => lang('Pink team'),
-                            4       => lang('Yellow team'),
-                            5       => lang('Ocean team'),
+                            0 => lang('Red team'),
+                            1 => lang('Green team'),
+                            2 => lang('Blue team'),
+                            3 => lang('Pink team'),
+                            4 => lang('Yellow team'),
+                            5 => lang('Ocean team'),
                             default => lang('Team')
                         };
                     }
@@ -562,24 +569,24 @@ abstract class ResultsParser extends AbstractResultsParser
                     if ($argsCount !== 9) {
                         throw new ResultsParseException('Invalid argument count in PACKX');
                     }
-                    /** @var Evo6PlayerInterface|null $player */
-                    $player = $game->players->get((int) $args[0]);
+                    /** @var Player|null $player */
+                    $player = $game->players->get((int)$args[0]);
                     if (!isset($player)) {
                         throw new ResultsParseException(
-                            'Cannot find Player - '.json_encode(
+                            'Cannot find Player - ' . json_encode(
                                 $args[0],
                                 JSON_THROW_ON_ERROR
-                            ).PHP_EOL.$this->fileName.':'.PHP_EOL.$this->fileContents
+                            ) . PHP_EOL . $this->fileName . ':' . PHP_EOL . $this->fileContents
                         );
                     }
-                    $player->score = (int) $args[1];
-                    $player->shots = (int) $args[2];
-                    $player->hits = (int) $args[3];
-                    $player->deaths = (int) $args[4];
-                    $player->position = (int) $args[5];
+                    $player->score = (int)$args[1];
+                    $player->shots = (int)$args[2];
+                    $player->hits = (int)$args[3];
+                    $player->deaths = (int)$args[4];
+                    $player->position = (int)$args[5];
                     $player->myLasermaxx = $args[6];
-                    $player->activity = (int) $args[7];
-                    $player->calories = (int) $args[8];
+                    $player->activity = (int)$args[7];
+                    $player->calories = (int)$args[8];
                     break;
 
                 // PACKY contains player's additional results
@@ -616,40 +623,40 @@ abstract class ResultsParser extends AbstractResultsParser
                     if ($argsCount !== 29) {
                         throw new ResultsParseException('Invalid argument count in PACKY');
                     }
-                    /** @var Evo6PlayerInterface|null $player */
-                    $player = $game->players->get((int) $args[0]);
+                    /** @var Player|null $player */
+                    $player = $game->players->get((int)$args[0]);
                     if (!isset($player)) {
                         throw new ResultsParseException(
-                            'Cannot find Player - '.json_encode(
+                            'Cannot find Player - ' . json_encode(
                                 $args[0],
                                 JSON_THROW_ON_ERROR
-                            ).PHP_EOL.$this->fileName.':'.PHP_EOL.$this->fileContents
+                            ) . PHP_EOL . $this->fileName . ':' . PHP_EOL . $this->fileContents
                         );
                     }
-                    $player->shotPoints = (int) ($args[1] ?? 0);
-                    $player->scoreAccuracy = (int) ($args[2] ?? 0);
-                    $player->scorePowers = (int) ($args[3] ?? 0);
-                    $player->scoreMines = (int) ($args[4] ?? 0);
+                    $player->shotPoints = (int)($args[1] ?? 0);
+                    $player->scoreAccuracy = (int)($args[2] ?? 0);
+                    $player->scorePowers = (int)($args[3] ?? 0);
+                    $player->scoreMines = (int)($args[4] ?? 0);
 
-                    $player->ammoRest = max(0, (int) ($args[5] ?? 0));
-                    $player->accuracy = (int) ($args[6] ?? 0);
-                    $player->minesHits = (int) ($args[7] ?? 0);
+                    $player->ammoRest = max(0, (int)($args[5] ?? 0));
+                    $player->accuracy = (int)($args[6] ?? 0);
+                    $player->minesHits = (int)($args[7] ?? 0);
 
-                    $player->hitsOther = (int) ($args[12] ?? 0);
-                    $player->hitsOwn = (int) ($args[13] ?? 0);
-                    $player->deathsOther = (int) ($args[14] ?? 0);
-                    $player->deathsOwn = (int) ($args[15] ?? 0);
+                    $player->hitsOther = (int)($args[12] ?? 0);
+                    $player->hitsOwn = (int)($args[13] ?? 0);
+                    $player->deathsOther = (int)($args[14] ?? 0);
+                    $player->deathsOwn = (int)($args[15] ?? 0);
 
-                    $player->livesRest = max(0, (int) ($args[16] ?? 0));
+                    $player->livesRest = max(0, (int)($args[16] ?? 0));
 
-                    $player->bonuses = (int) ($args[26] ?? 0);
-                    $player->scoreVip = (int) ($args[19] ?? 0);
-                    $player->scoreActivity = (int) ($args[21] ?? 0);
-                    $player->scoreEncouragement = (int) ($args[22] ?? 0);
-                    $player->scoreKnockout = (int) ($args[24] ?? 0);
-                    $player->scoreReality = (int) ($args[25] ?? 0);
-                    $player->scorePenalty = (int) ($args[28] ?? 0);
-                    $player->penaltyCount = (int) ($args[27] ?? 0);
+                    $player->bonuses = (int)($args[26] ?? 0);
+                    $player->scoreVip = (int)($args[19] ?? 0);
+                    $player->scoreActivity = (int)($args[21] ?? 0);
+                    $player->scoreEncouragement = (int)($args[22] ?? 0);
+                    $player->scoreKnockout = (int)($args[24] ?? 0);
+                    $player->scoreReality = (int)($args[25] ?? 0);
+                    $player->scorePenalty = (int)($args[28] ?? 0);
+                    $player->penaltyCount = (int)($args[27] ?? 0);
                     break;
 
                 // PACKZ contains some player's additional results - probably player's deaths (duplicate from PACKY)
@@ -668,18 +675,18 @@ abstract class ResultsParser extends AbstractResultsParser
                     if ($argsCount !== 4) {
                         throw new ResultsParseException('Invalid argument count in TEAMX');
                     }
-                    /** @var Evo6TeamInterface|null $team */
-                    $team = $game->teams->get((int) $args[0]);
+                    /** @var Team|null $team */
+                    $team = $game->teams->get((int)$args[0]);
                     if (!isset($team)) {
                         throw new ResultsParseException(
-                            'Cannot find Team - '.json_encode(
+                            'Cannot find Team - ' . json_encode(
                                 $args[0],
                                 JSON_THROW_ON_ERROR
-                            ).PHP_EOL.$this->fileName.':'.PHP_EOL.$this->fileContents
+                            ) . PHP_EOL . $this->fileName . ':' . PHP_EOL . $this->fileContents
                         );
                     }
-                    $team->score = (int) $args[1];
-                    $team->position = (int) $args[2];
+                    $team->score = (int)$args[1];
+                    $team->position = (int)$args[2];
                     break;
 
                 // HITS contain information about individual hits between players
@@ -689,18 +696,18 @@ abstract class ResultsParser extends AbstractResultsParser
                     if ($argsCount < 2) {
                         throw new ResultsParseException('Invalid argument count in HITS');
                     }
-                    /** @var Evo6PlayerInterface|null $player */
-                    $player = $game->players->get((int) $args[0]);
+                    /** @var Player|null $player */
+                    $player = $game->players->get((int)$args[0]);
                     if (!isset($player)) {
                         throw new ResultsParseException(
-                            'Cannot find Player - '.json_encode(
+                            'Cannot find Player - ' . json_encode(
                                 $args[0],
                                 JSON_THROW_ON_ERROR
-                            ).PHP_EOL.$this->fileName.':'.PHP_EOL.$this->fileContents
+                            ) . PHP_EOL . $this->fileName . ':' . PHP_EOL . $this->fileContents
                         );
                     }
                     foreach ($game->players as $player2) {
-                        $player->addHits($player2, (int) ($args[$keysVests[$player2->vest] ?? -1] ?? 0));
+                        $player->addHits($player2, (int)($args[$keysVests[$player2->vest] ?? -1] ?? 0));
                     }
                     break;
 
@@ -736,14 +743,7 @@ abstract class ResultsParser extends AbstractResultsParser
             }
 
             $this->processExtensions($game, $meta);
-        }
-        else {
-            try {
-                $logger = new Logger(LOG_DIR.'results/', 'import');
-                $logger->warning('Game meta is not valid.', $meta);
-            } catch (DirectoryCreationException) {
-            }
-
+        } else {
             $mode = $game->mode;
             if ($mode instanceof ModifyScoresMode) {
                 $mode->modifyResults($game);
@@ -760,11 +760,12 @@ abstract class ResultsParser extends AbstractResultsParser
      *
      * Arguments are separated by a comma ',' character.
      *
-     * @param  string  $args  Concatenated arguments
+     * @param string $args Concatenated arguments
      *
      * @return string[] Separated and trimmed arguments, not type-casted
      */
-    private function getArgs(string $args) : array {
+    private function getArgs(string $args): array
+    {
         return array_map('trim', explode(',', $args));
     }
 }

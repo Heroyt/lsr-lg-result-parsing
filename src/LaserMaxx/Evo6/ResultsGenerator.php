@@ -7,15 +7,32 @@ use Lsr\Lg\Results\Enums\GameModeType;
 use Lsr\Lg\Results\Interface\Models\GameInterface;
 use Lsr\Lg\Results\Timing;
 
+/**
+ * @template-covariant Team of Evo6TeamInterface
+ * @template-covariant Player of Evo6PlayerInterface
+ * @template-covariant Meta of array{hash?:string,mode?:string,loadTime?:numeric}|array<string,mixed>
+ * @template Game of Evo6GameInterface<Team, Player, Meta>
+ * @extends \Lsr\Lg\Results\LaserMaxx\ResultsGenerator<Team, Player, Meta, Game>
+ */
 class ResultsGenerator extends \Lsr\Lg\Results\LaserMaxx\ResultsGenerator
 {
 
+    /**
+     * @template G of GameInterface
+     * @param G $game
+     * @return bool
+     * @phpstan-assert-if-true Game $game
+     */
     public static function checkGame(GameInterface $game) : bool {
         return $game instanceof Evo6GameInterface;
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     * @throws \JsonException
+     */
     public function generate(GameInterface $game) : string {
-        assert($game instanceof Evo6GameInterface);
         return
             $this->getHeader($game)."\n".
             $this->getGroup($game)."\n".
@@ -28,10 +45,16 @@ class ResultsGenerator extends \Lsr\Lg\Results\LaserMaxx\ResultsGenerator
             $this->getHits($game)."\nGAMECLONES{0}#\n";
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     */
     public function getHeader(Evo6GameInterface $game) : string {
-        $fileNum = $game->fileNumber ?? '12345';
+        $fileNum = $game->fileNumber;
         $timing = $game->timing ?? new Timing(20, 15, 10);
+        assert($game->start !== null);
         $start = $game->start->format('YmdHis');
+        assert($game->end !== null);
         $end = $game->end->format('YmdHis');
         $gameType = match ($game->gameType) {
             GameModeType::SOLO => 0,
@@ -80,6 +103,10 @@ class ResultsGenerator extends \Lsr\Lg\Results\LaserMaxx\ResultsGenerator
         LMXGAME;
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     */
     public function getVipStyle(Evo6GameInterface $game) : string {
         $vipOn = $game->gameStyleType === GameStyleType::VIP ? 1 : 0;
         $vipBazooka = $game->vipSettings->hitType === HitType::BAZOOKA ? 1 : 0;
@@ -93,6 +120,10 @@ class ResultsGenerator extends \Lsr\Lg\Results\LaserMaxx\ResultsGenerator
             LMXGAME;
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     */
     public function getZombieStyle(Evo6GameInterface $game) : string {
         $zombiesOn = ($game->gameStyleType === GameStyleType::ZOMBIES_TEAM || $game->gameStyleType === GameStyleType::ZOMBIES_SOLO) ?
             1 : 0;
@@ -104,9 +135,12 @@ class ResultsGenerator extends \Lsr\Lg\Results\LaserMaxx\ResultsGenerator
 
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     */
     public function getPack(Evo6GameInterface $game) : string {
         $players = [];
-        /** @var Evo6PlayerInterface $player */
         foreach ($game->players as $player) {
             $players[] = sprintf(
                 'PACK{%s,%s,%d,0,%d,0,0,%d}#',
@@ -120,9 +154,12 @@ class ResultsGenerator extends \Lsr\Lg\Results\LaserMaxx\ResultsGenerator
         return implode("\n", $players);
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     */
     public function getPackx(Evo6GameInterface $game) : string {
         $players = [];
-        /** @var Evo6PlayerInterface $player */
         foreach ($game->players as $player) {
             $players[] = sprintf(
                 'PACKX{%s,%d,%d,%d,%d,%d,%s,%d,%d}#',
@@ -140,9 +177,12 @@ class ResultsGenerator extends \Lsr\Lg\Results\LaserMaxx\ResultsGenerator
         return implode("\n", $players);
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     */
     public function getPacky(Evo6GameInterface $game) : string {
         $players = [];
-        /** @var Evo6PlayerInterface $player */
         foreach ($game->players as $player) {
             $players[] = sprintf(
                 'PACKY{%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,0,%d,%d,%d,%d,0,%d,%d,%d,%d,%d}#',
@@ -177,9 +217,12 @@ class ResultsGenerator extends \Lsr\Lg\Results\LaserMaxx\ResultsGenerator
         return implode("\n", $players);
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     */
     public function getPackz(Evo6GameInterface $game) : string {
         $players = [];
-        /** @var Evo6PlayerInterface $player */
         foreach ($game->players as $player) {
             $players[] = sprintf(
                 'PACKZ{%s,%d,%d}#',
@@ -191,9 +234,12 @@ class ResultsGenerator extends \Lsr\Lg\Results\LaserMaxx\ResultsGenerator
         return implode("\n", $players);
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     */
     public function getTeamx(Evo6GameInterface $game) : string {
         $teams = [];
-        /** @var Evo6TeamInterface $team */
         foreach ($game->teams as $team) {
             $teams[] = sprintf(
                 'TEAMX{%d,%d,%d,0}#',

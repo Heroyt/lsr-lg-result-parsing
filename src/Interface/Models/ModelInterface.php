@@ -6,6 +6,7 @@ namespace Lsr\Lg\Results\Interface\Models;
 use Dibi\Row;
 use JsonSerializable;
 use Lsr\Orm\Exceptions\ModelNotFoundException;
+use Lsr\Orm\Model;
 use Lsr\Orm\ModelQuery;
 
 interface ModelInterface extends JsonSerializable
@@ -32,7 +33,7 @@ interface ModelInterface extends JsonSerializable
     public static function exists(int $id) : bool;
 
     /**
-     * @return ModelQuery<static>
+     * @return ModelQuery<static&Model>
      */
     public static function query() : ModelQuery;
 

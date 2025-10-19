@@ -8,9 +8,10 @@ use Lsr\Lg\Results\Interface\Models\GameInterface;
 interface ResultParserExtensionInterface
 {
     /**
-     * @param  GameInterface  $game
+     * @template Game of GameInterface
+     * @param Game $game
      * @param  array<string,mixed>  $meta
-     * @param  AbstractResultsParser  $parser
+     * @param AbstractResultsParser<Game> $parser
      * @return void
      */
     public function parse(GameInterface $game, array $meta, AbstractResultsParser $parser) : void;

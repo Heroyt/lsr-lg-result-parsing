@@ -22,7 +22,7 @@ interface CollectionInterface extends ArrayAccess, JsonSerializable, Countable, 
     /**
      * Create a new collection from array of data
      *
-     * @param  Model  $array
+     * @param T[] $array
      *
      * @return CollectionInterface<T>
      */
@@ -31,7 +31,7 @@ interface CollectionInterface extends ArrayAccess, JsonSerializable, Countable, 
     /**
      * Get all collection's data as an array
      *
-     * @return Model
+     * @return T[]
      */
     public function getAll() : array;
 
@@ -43,7 +43,7 @@ interface CollectionInterface extends ArrayAccess, JsonSerializable, Countable, 
     /**
      * Checks whether the given model already exists in collection
      *
-     * @param  Model  $model
+     * @param T $model
      *
      * @return bool
      */
@@ -52,7 +52,7 @@ interface CollectionInterface extends ArrayAccess, JsonSerializable, Countable, 
     /**
      * Get collection's model type
      *
-     * @return string
+     * @return class-string<T>
      */
     public function getType() : string;
 

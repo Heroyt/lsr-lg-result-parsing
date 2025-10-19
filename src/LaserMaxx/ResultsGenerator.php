@@ -7,8 +7,20 @@ use Lsr\Helpers\Tools\Strings;
 use Lsr\Lg\Results\AbstractResultsGenerator;
 use Lsr\Lg\Results\LaserMaxx\Evo6\Evo6GameInterface;
 
+/**
+ * @template-covariant Team of LaserMaxxTeamInterface
+ * @template-covariant Player of LaserMaxxPlayerInterface
+ * @template-covariant Meta of array<string,mixed>
+ * @template Game of LaserMaxxGameInterface<Team, Player, Meta>
+ * @extends AbstractResultsGenerator<Game>
+ */
 abstract class ResultsGenerator extends AbstractResultsGenerator
 {
+    /**
+     * @param Game $game
+     * @return string
+     * @throws \JsonException
+     */
     public function getGroup(LaserMaxxGameInterface $game) : string {
         $meta = [
             'music'    => $game->music?->id,
@@ -22,7 +34,6 @@ abstract class ResultsGenerator extends AbstractResultsGenerator
             $meta['groupName'] = $game->group->name;
         }
 
-        /** @var LaserMaxxPlayerInterface $player */
         foreach ($game->players as $player) {
             $vest = $player->vest;
             $asciiName = substr($this->escapeName($player->name), 0, 12);
@@ -35,7 +46,6 @@ abstract class ResultsGenerator extends AbstractResultsGenerator
             $hashData[(int) $vest] = $vest.'-'.$asciiName;
         }
 
-        /** @var LaserMaxxTeamInterface $team */
         foreach ($game->teams as $team) {
             $asciiName = $this->escapeName($team->name);
             if ($team->name !== $asciiName) {
@@ -94,9 +104,12 @@ abstract class ResultsGenerator extends AbstractResultsGenerator
         );
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     */
     public function getTeam(LaserMaxxGameInterface $game) : string {
         $teams = [];
-        /** @var LaserMaxxTeamInterface $team */
         foreach ($game->teams as $team) {
             $teams[] = sprintf(
                 'TEAM{%d,%s,%d}#',
@@ -108,12 +121,14 @@ abstract class ResultsGenerator extends AbstractResultsGenerator
         return implode("\n", $teams);
     }
 
+    /**
+     * @param Game $game
+     * @return string
+     */
     public function getHits(LaserMaxxGameInterface $game) : string {
         $hits = [];
-        /** @var LaserMaxxPlayerInterface $player */
         foreach ($game->players as $player) {
             $hit = 'HITS{'.$player->vest;
-            /** @var LaserMaxxPlayerInterface $player2 */
             foreach ($game->players as $player2) {
                 $hit .= ','.$player->getHitsPlayer($player2);
             }

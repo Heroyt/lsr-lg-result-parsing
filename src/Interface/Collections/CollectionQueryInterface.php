@@ -17,75 +17,76 @@ interface CollectionQueryInterface
     /**
      * Add a new filter to filter data by
      *
-     * @param  string  $param
-     * @param  mixed  ...$values
+     * @param string $param
+     * @param mixed ...$values
      *
-     * @return CollectionQueryInterface<T>
+     * @return $this
      */
-    public function filter(string $param, mixed ...$values) : CollectionQueryInterface;
+    public function filter(string $param, mixed ...$values): CollectionQueryInterface;
 
     /**
      * Add any filter object
      *
-     * @param  CollectionQueryFilterInterface<T>  $filter
+     * @param CollectionQueryFilterInterface $filter
      *
-     * @return CollectionQueryInterface<T>
+     * @return $this
      */
-    public function addFilter(CollectionQueryFilterInterface $filter) : CollectionQueryInterface;
+    public function addFilter(CollectionQueryFilterInterface $filter): CollectionQueryInterface;
 
     /**
      * Get the query's result
      *
-     * @return AbstractCollection<T>|Model
+     * @return AbstractCollection<T>
      */
-    public function get() : AbstractCollection | array;
+    public function get(): AbstractCollection;
 
     /**
      * Get only the first result or null
      *
      * @return T|null
      */
-    public function first() : ?Model;
+    public function first(): ?Model;
 
     /**
      * Set a parameter to sort the by result
      *
-     * @param  string  $param
+     * @param string $param
      *
-     * @return CollectionQueryInterface<T>
+     * @return $this
      */
-    public function sortBy(string $param) : CollectionQueryInterface;
+    public function sortBy(string $param): CollectionQueryInterface;
 
     /**
      * Map the result to return an array of only given parameter
      *
-     * @param  string  $param
+     * @param string $param
      *
-     * @return CollectionQueryInterface<T>
+     * @return array<mixed>
      */
-    public function pluck(string $param) : CollectionQueryInterface;
+    public function pluck(string $param): array;
 
     /**
      * Add a map callback
      *
-     * @param  callable  $callback
+     * @template Mapped
+     * @param callable(T):Mapped $callback
      *
-     * @return CollectionQueryInterface<T>
+     * @return array<Mapped>
      * @see array_map()
      */
-    public function map(callable $callback) : CollectionQueryInterface;
+    public function map(callable $callback): array;
 
     /**
      * Set sort direction in ascending order
      *
-     * @return CollectionQueryInterface<T>
+     * @return $this
      */
-    public function asc() : CollectionQueryInterface;
+    public function asc(): CollectionQueryInterface;
 
     /**
      * Set sort direction in descending order
      *
-     * @return CollectionQueryInterface<T>
+     * @return $this
      */
-    public function desc() : CollectionQueryInterface;
+    public function desc(): CollectionQueryInterface;
 }

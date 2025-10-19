@@ -5,37 +5,39 @@ namespace Lsr\Lg\Results\Interface;
 
 use Lsr\Lg\Results\Interface\Models\PlayerInterface;
 use Lsr\Lg\Results\PlayerCollection;
+use Lsr\Orm\Model;
 
 /**
  * Interface for classes that have players
  *
  * @template P of PlayerInterface
  * @property class-string<P> $playerClass
- * @property PlayerCollection<P> $players
- * @property PlayerCollection<P> $playersSorted
  */
 interface WithPlayersInterface
 {
 
     public int $playerCount {
         get;
+        set;
     }
 
     /** @var class-string<P> */
     public string $playerClass {
         get;
     }
+    /** @var PlayerCollection<P&Model> */
     public PlayerCollection $players {
         get;
         set;
     }
+    /** @var PlayerCollection<P&Model> */
     public PlayerCollection $playersSorted {
         get;
         set;
     }
 
     /**
-     * @return PlayerCollection<P>
+     * @return PlayerCollection<P&Model>
      */
     public function loadPlayers() : PlayerCollection;
 

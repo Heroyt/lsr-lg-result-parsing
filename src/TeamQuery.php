@@ -5,11 +5,12 @@ namespace Lsr\Lg\Results;
 
 use Lsr\Lg\Results\Collections\AbstractCollectionQuery;
 use Lsr\Lg\Results\Interface\Models\TeamInterface;
+use Lsr\Orm\Model;
 
 /**
  * Query object for team models
  *
- * @template T of TeamInterface
+ * @template T of TeamInterface&Model
  * @extends AbstractCollectionQuery<T>
  */
 class TeamQuery extends AbstractCollectionQuery

@@ -7,19 +7,26 @@ use Lsr\Lg\Results\Exception\ResultsParseException;
 use Lsr\Lg\Results\Interface\Models\GameInterface;
 use Lsr\Lg\Results\Interface\ResultsParserInterface;
 
+/**
+ * @template-covariant Game of GameInterface
+ * @template Parser of ResultsParserInterface<Game>
+ */
 class ResultsParser
 {
     protected string $fileName = '';
     protected string $contents = '';
+
+    /** @var Parser|null */
     private ?ResultsParserInterface $parser;
 
     /**
-     * @param  array<non-empty-string, ResultsParserInterface>  $systems
+     * @param array<non-empty-string, Parser> $systems
      */
     public function __construct(
         protected readonly array $systems,
     ) {
         foreach ($this->systems as $system => $parser) {
+            /** @phpstan-ignore function.impossibleType */
             if (!is_subclass_of($parser, ResultsParserInterface::class)) {
                 throw new \InvalidArgumentException('Invalid system settings for "'.$system.'"');
             }
@@ -29,7 +36,7 @@ class ResultsParser
     /**
      * Parse a given game file
      *
-     * @return GameInterface
+     * @return Game
      * @throws ResultsParseException|FileException
      */
     public function parse() : GameInterface {
@@ -37,7 +44,7 @@ class ResultsParser
     }
 
     /**
-     * @return ResultsParserInterface
+     * @return Parser
      * @throws ResultsParseException|FileException
      */
     private function findParser() : ResultsParserInterface {
@@ -60,7 +67,8 @@ class ResultsParser
     }
 
     /**
-     * @throws FileException
+     * @return $this
+     *@throws FileException
      */
     public function setFile(string $fileName) : ResultsParser {
         if (!file_exists($fileName) || !is_readable($fileName)) {
@@ -72,6 +80,9 @@ class ResultsParser
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setContents(string $contents) : ResultsParser {
         $this->fileName = '';
         $this->contents = $contents;

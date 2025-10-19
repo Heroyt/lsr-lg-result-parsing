@@ -31,12 +31,17 @@ class VipSettings implements InsertExtendInterface
     public static function parseRow(Row $row) : ?static {
         return new static(
             on                : (bool) $row->vip_on,
-            lives             : $row->vip_lives,
-            ammo              : $row->vip_ammo,
-            respawn           : $row->vip_respawn,
+            /** @phpstan-ignore cast.int */
+            lives: (int)$row->vip_lives,
+            /** @phpstan-ignore cast.int */
+            ammo: (int)$row->vip_ammo,
+            /** @phpstan-ignore cast.int */
+            respawn: (int)$row->vip_respawn,
             killTeam          : (bool) $row->vip_kill_team,
-            vipHitScore       : $row->vip_hit_score,
-            hitType           : HitType::tryFrom($row->vip_hit_type) ?? HitType::NORMAL,
+            /** @phpstan-ignore cast.int */
+            vipHitScore: (int)$row->vip_hit_score,
+            /** @phpstan-ignore cast.int */
+            hitType: HitType::tryFrom((int)$row->vip_hit_type) ?? HitType::NORMAL,
             blastShots        : (bool) $row->vip_blast_shots,
             ignoreTeammateHits: (bool) $row->vip_ignore_teammate_hits,
         );
