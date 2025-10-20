@@ -143,7 +143,6 @@ abstract class ResultsParser extends AbstractResultsParser
                             $date = null;
                         }
                         $game->start = $date;
-                        $game->started = $now > $game->start;
                     }
                     if ($dateEnd !== $this::EMPTY_DATE) {
                         $date = DateTime::createFromFormat('YmdHis', $dateEnd);
@@ -185,7 +184,6 @@ abstract class ResultsParser extends AbstractResultsParser
                             $date = null;
                         }
                         $game->end = $date;
-                        $game->finished = $now->getTimestamp() > ($game->end?->getTimestamp() + ($game->timing->after ?? 0));
                     }
                     break;
 

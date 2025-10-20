@@ -7,8 +7,5 @@ parameters:
 		- src
 		- include
 	tmpDir: temp
-#	ignoreErrors:
-#		-
-#			identifier: missingType.generics
 	universalObjectCratesClasses:
 		- Dibi\Row
