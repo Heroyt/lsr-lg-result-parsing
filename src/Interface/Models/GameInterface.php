@@ -69,12 +69,22 @@ interface GameInterface extends WithMetaInterface, WithPlayersInterface, WithTea
         get;
         set;
     }
-    public bool $started {
-        get;
-        set;
-    }
-    public bool $finished {
-        get;
-        set;
-    }
+
+    /**
+     * Check if game is already finished based on current time
+     *
+     * @return bool
+     * @phpstan-assert-if-true !null $this->start
+     * @phpstan-assert-if-true !null $this->end
+     * @phpstan-assert-if-true !null $this->importTime
+     */
+    public function isFinished(): bool;
+
+    /**
+     * Check if game was already started based on current time
+     *
+     * @return bool
+     * @phpstan-assert-if-true !null $this->start
+     */
+    public function isStarted(): bool;
 }
