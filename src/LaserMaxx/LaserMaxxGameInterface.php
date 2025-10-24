@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lsr\Lg\Results\LaserMaxx;
 
+use DateTimeInterface;
 use Lsr\Lg\Results\Interface\Models\GameInterface;
 
 /**
@@ -66,6 +67,15 @@ interface LaserMaxxGameInterface extends GameInterface
     }
 
     public VipSettings $vipSettings {
+        get;
+        set;
+    }
+
+    public ?DateTimeInterface $playEnd {
+        get;
+        set;
+    }
+    public ?DateTimeInterface $realEnd {
         get;
         set;
     }
