@@ -81,6 +81,15 @@ interface GameInterface extends WithMetaInterface, WithPlayersInterface, WithTea
     public function isFinished(): bool;
 
     /**
+     * Check if game is already ended (with or without results).
+     *
+     * Might be just an alias for isFinished() in most cases.
+     *
+     * @return bool
+     */
+    public function isEnded(): bool;
+
+    /**
      * Check if game was already started based on current time
      *
      * @return bool
