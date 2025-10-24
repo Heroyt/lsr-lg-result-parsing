@@ -186,6 +186,15 @@ abstract class ResultsParser extends AbstractResultsParser
                             $date = null;
                         }
                         $game->end = $date;
+                        $game->playEnd = $date;
+                    }
+                    $dateEnd = $args[5];
+                    if ($dateEnd !== $this::EMPTY_DATE) {
+                        $date = DateTime::createFromFormat('YmdHis', $dateEnd);
+                        if ($date === false) {
+                            $date = null;
+                        }
+                        $game->realEnd = $date;
                     }
                     break;
 
