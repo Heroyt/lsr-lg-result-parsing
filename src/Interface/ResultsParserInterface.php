@@ -51,6 +51,23 @@ interface ResultsParserInterface
     public function setContents(string $contents) : static;
 
     /**
+     * Set parser source from inline contents while preserving source metadata.
+     *
+     * @param string $displayPath Path or logical source name used in parsed metadata and errors.
+     * @param string $contents Raw source contents.
+     * @param int|null $mtime Source modification time timestamp, if known.
+     *
+     * @return $this
+     */
+    public function setSource(string $displayPath, string $contents, ?int $mtime = null) : static;
+
+    public function getSourcePath() : string;
+
+    public function getSourceBaseName() : string;
+
+    public function getSourceMtime() : ?int;
+
+    /**
      * Parse a game results file and return a parsed object
      *
      * @return G

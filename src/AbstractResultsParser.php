@@ -35,6 +35,7 @@ abstract class AbstractResultsParser implements ResultsParserInterface
     protected array $matches = [];
     protected string $fileName = '';
     protected string $fileContents = '';
+    protected ?int $sourceMtime = null;
 
     /**
      * @param  PlayerProviderInterface  $playerProvider
@@ -107,6 +108,8 @@ abstract class AbstractResultsParser implements ResultsParserInterface
             throw new FileException('File "'.$this->fileName.'" read failed');
         }
         $this->fileContents = mb_convert_encoding($contents, 'UTF-8');
+        $mtime = filemtime($this->fileName);
+        $this->sourceMtime = is_int($mtime) ? $mtime : null;
         $this->matches = [];
         return $this;
     }
@@ -116,8 +119,31 @@ abstract class AbstractResultsParser implements ResultsParserInterface
      */
     public function setContents(string $contents) : static {
         $this->fileContents = $contents;
+        $this->sourceMtime = null;
         $this->matches = [];
         return $this;
+    }
+
+    public function setSource(string $displayPath, string $contents, ?int $mtime = null) : static {
+        $this->fileName = $displayPath;
+        $this->fileContents = mb_convert_encoding($contents, 'UTF-8');
+        $this->sourceMtime = $mtime;
+        $this->matches = [];
+        return $this;
+    }
+
+    public function getSourcePath() : string {
+        return $this->fileName;
+    }
+
+    public function getSourceBaseName() : string {
+        $pathInfo = pathinfo($this->getSourcePath());
+
+        return $pathInfo['filename'];
+    }
+
+    public function getSourceMtime() : ?int {
+        return $this->sourceMtime;
     }
 
     /**

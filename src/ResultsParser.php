@@ -15,6 +15,7 @@ class ResultsParser
 {
     protected string $fileName = '';
     protected string $contents = '';
+    protected ?int $sourceMtime = null;
 
     /** @var Parser|null */
     private ?ResultsParserInterface $parser;
@@ -52,7 +53,10 @@ class ResultsParser
             foreach ($this->systems as $parser) {
                 if ($parser::checkFile($this->fileName, $this->contents)) {
                     $this->parser = $parser;
-                    if (!empty($this->fileName)) {
+                    if (!empty($this->contents)) {
+                        $this->parser->setSource($this->fileName, $this->contents, $this->sourceMtime);
+                    }
+                    elseif (!empty($this->fileName)) {
                         $this->parser->setFile($this->fileName);
                     }
                     else {
@@ -76,6 +80,7 @@ class ResultsParser
         }
         $this->fileName = $fileName;
         $this->contents = '';
+        $this->sourceMtime = null;
         $this->parser = null;
         return $this;
     }
@@ -84,8 +89,16 @@ class ResultsParser
      * @return $this
      */
     public function setContents(string $contents) : ResultsParser {
-        $this->fileName = '';
+        return $this->setSource('', $contents);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setSource(string $displayPath, string $contents, ?int $mtime = null) : ResultsParser {
+        $this->fileName = $displayPath;
         $this->contents = $contents;
+        $this->sourceMtime = $mtime;
         $this->parser = null;
         return $this;
     }

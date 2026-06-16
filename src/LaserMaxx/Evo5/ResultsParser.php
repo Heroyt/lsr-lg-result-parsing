@@ -85,12 +85,12 @@ abstract class ResultsParser extends AbstractResultsParser
         $game = new ($this->gameClass);
 
         // Results file info
-        $pathInfo = pathinfo($this->fileName);
-        preg_match('/(\d+)/', $pathInfo['filename'], $matches);
-        $game->resultsFile = $pathInfo['filename'];
+        $sourceBaseName = $this->getSourceBaseName();
+        preg_match('/(\d+)/', $sourceBaseName, $matches);
+        $game->resultsFile = $sourceBaseName;
         $game->fileNumber = (int)($matches[0] ?? 0);
-        $fTime = filemtime($this->fileName);
-        if (is_int($fTime)) {
+        $fTime = $this->getSourceMtime();
+        if ($fTime !== null) {
             $game->fileTime = new DateTimeImmutable()->setTimestamp($fTime);
         }
 
@@ -99,7 +99,7 @@ abstract class ResultsParser extends AbstractResultsParser
 
         // Check if parsing is successful and lines were found
         if (empty($titles) || empty($argsAll)) {
-            throw new ResultsParseException('The results file cannot be parsed: ' . $this->fileName);
+            throw new ResultsParseException('The results file cannot be parsed: ' . $this->getSourcePath());
         }
 
         /** @var array<string,string> $meta Meta data from game */
